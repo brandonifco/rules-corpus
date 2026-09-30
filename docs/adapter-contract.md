@@ -100,7 +100,10 @@ The adapter takes the strict reading wherever the rules leave room:
 - Whether a line is a marker line is decided by the first match on it, which must cover the
   whole line.
 - Any repeated segment id is a refusal, including `p{page}.b{k}` repeated because a page
-  number repeats.
+  number recurs after another page. `k` restarts when the page changes, not at every
+  marker: a marker naming the page already in effect continues the numbering.
+- A `pageMarker` match, or a heading's `locator` group, that starts or ends between the two
+  halves of a surrogate pair is a refusal: it has no byte offset.
 - A segment whose page at its last byte precedes the page at its first byte is a refusal.
 - A parameter that would have no effect is a refusal: `headingPattern` without
   `segmentation` `headings`, or `pagesContiguous` without `pageMarker`.

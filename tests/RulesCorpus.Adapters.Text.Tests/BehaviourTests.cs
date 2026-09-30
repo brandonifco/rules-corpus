@@ -119,6 +119,54 @@ public sealed class BehaviourTests
     }
 
     [Fact]
+    public void Block_numbering_continues_across_a_marker_that_repeats_the_current_page()
+    {
+        // The inline "{1}" is a second marker for page 1; k restarts per page, not per marker.
+        byte[] input = Utf8("{1}\nA\n\nsee {1} here\n\nC\n");
+        var output = Derive(input, ("segmentation", "blocks"), ("pageMarker", @"\{([0-9]+)\}"));
+
+        Assert.Equal(["p1.b1", "p1.b2", "p1.b3"], output.Segments.Select(s => s.Id));
+        Assert.Equal(["A", "see {1} here", "C"], output.Segments.Select(s => SegmentText(output, s)));
+        AssertSpansRoundTrip(input, output);
+    }
+
+    [Fact]
+    public void Block_numbering_continues_across_a_marker_line_that_repeats_the_current_page()
+    {
+        var output = Derive(Utf8("{1}\na\n{1}\nb"), ("segmentation", "blocks"), ("pageMarker", @"^\{([0-9]+)\}$"));
+
+        Assert.Equal(["p1.b1", "p1.b2"], output.Segments.Select(s => s.Id));
+    }
+
+    [Fact]
+    public void Many_inline_markers_on_one_long_line_are_found_in_linear_time()
+    {
+        // About 1 MB on one line with 200,000 inline markers. Counting each marker's byte
+        // offset from the line start made this quadratic; a generous bound avoids flakiness.
+        const int markers = 200_000;
+        byte[] input = Utf8(string.Concat(Enumerable.Repeat("{1}é", markers)) + "\n");
+        var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+
+        var output = Derive(input, ("pageMarker", @"\{([0-9]+)\}"));
+
+        Assert.True(stopwatch.Elapsed < TimeSpan.FromSeconds(10), $"took {stopwatch.Elapsed}");
+        Assert.Equal(new PageRange(1, 1), Pages(Assert.Single(output.Segments)));
+    }
+
+    [Fact]
+    public void Inline_marker_offsets_count_bytes_between_markers_after_multibyte_text()
+    {
+        // Pages 2 and 3 take effect at byte offsets 2 and 11 ("é" and "€" are 2 and 3 bytes);
+        // the first block starts before either, and "x" falls on page 3.
+        byte[] input = Utf8("é{2}€€{3}\n\nx\n\n{4}\ny\n");
+        var output = Derive(input, ("segmentation", "blocks"), ("pageMarker", @"\{([0-9]+)\}"));
+
+        Assert.Equal(["b1", "p3.b1", "p4.b1"], output.Segments.Select(s => s.Id));
+        Assert.Equal([new PageRange(3, 3), new PageRange(4, 4)], output.Segments.Skip(1).Select(Pages));
+        AssertSpansRoundTrip(input, output);
+    }
+
+    [Fact]
     public void Whole_text_starting_on_a_marker_spans_its_pages()
     {
         var output = Derive(Utf8("{1}\na\n{2}\nb"), ("pageMarker", @"^\{(\d+)\}$"));

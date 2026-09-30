@@ -31,7 +31,7 @@ internal sealed class Segmenter
     private int _blockStart = -1;
     private int _blockEnd = -1;
     private int _unpagedBlocks;
-    private int _pagedBlockMarker = -1;
+    private int _pagedBlockPage;
     private int _pagedBlocks;
 
     // Headings: the open segment's start, id and locator.
@@ -122,19 +122,43 @@ internal sealed class Segmenter
             return false;
         }
 
+        RequireWholeCharacters(line, match.Index, match.Length, $"Page marker match on line {Format(lineNumber)}");
         if (match.Index == 0 && match.Length == line.Length)
         {
             AddMarker(match, lineStart, line, lineNumber);
             return true;
         }
 
+        // Each marker's byte offset is carried forward from the previous one, so a long line
+        // with many markers is counted once rather than once per marker.
+        int charsCounted = 0;
+        int bytesCounted = 0;
         for (; match.Success; match = match.NextMatch())
         {
-            AddMarker(match, lineStart + Utf8.GetByteCount(line.AsSpan(0, match.Index)), line, lineNumber);
+            RequireWholeCharacters(line, match.Index, match.Length, $"Page marker match on line {Format(lineNumber)}");
+            bytesCounted += Utf8.GetByteCount(line.AsSpan(charsCounted, match.Index - charsCounted));
+            charsCounted = match.Index;
+            AddMarker(match, lineStart + bytesCounted, line, lineNumber);
         }
 
         return false;
     }
+
+    // A pattern can match half of a surrogate pair (a class such as [\uDC00-\uDFFF] does),
+    // and a span that starts or ends there has no byte offset: it lies inside one UTF-8
+    // sequence. That is a refusal, not an encoder exception.
+    private static void RequireWholeCharacters(string line, int index, int length, string what)
+    {
+        if (SplitsPair(line, index) || SplitsPair(line, index + length))
+        {
+            throw Refusal.Of(
+                $"{what} runs from character {Format(index)} to {Format(index + length)}, which starts or ends inside a "
+                + "surrogate pair; a match must cover whole characters.");
+        }
+    }
+
+    private static bool SplitsPair(string text, int index) =>
+        index > 0 && index < text.Length && char.IsHighSurrogate(text[index - 1]) && char.IsLowSurrogate(text[index]);
 
     private void AddMarker(Match match, int offset, string line, int lineNumber)
     {
@@ -221,13 +245,16 @@ internal sealed class Segmenter
             return;
         }
 
-        if (marker != _pagedBlockMarker)
+        // k restarts when the page changes, not at every marker: a second marker naming the
+        // page already in effect (an inline one, say) continues the numbering.
+        int pageNumber = _markerPages[marker];
+        if (pageNumber != _pagedBlockPage)
         {
-            _pagedBlockMarker = marker;
+            _pagedBlockPage = pageNumber;
             _pagedBlocks = 0;
         }
 
-        string page = Format(_markerPages[marker]);
+        string page = Format(pageNumber);
         Emit("p" + page + ".b" + Format(++_pagedBlocks), start, end, "p. " + page);
     }
 
@@ -259,6 +286,7 @@ internal sealed class Segmenter
                 throw Refusal.Of($"Heading on line {Format(lineNumber)} has an empty or unmatched 'locator' group.");
             }
 
+            RequireWholeCharacters(line, locatorGroup.Index, locatorGroup.Length, $"Heading 'locator' group on line {Format(lineNumber)}");
             locator = locatorGroup.Value;
         }
 
@@ -300,8 +328,9 @@ internal sealed class Segmenter
 
         if (!_ids.Add(id))
         {
-            // Reachable for generated ids when page numbers repeat without pagesContiguous.
-            throw Refusal.Of($"Segment id '{id}' occurs twice; page markers may repeat a page number.");
+            // Reachable for generated ids when a page number recurs after another page, which
+            // pagesContiguous would have refused.
+            throw Refusal.Of($"Segment id '{id}' occurs twice; page markers may return to an earlier page number.");
         }
 
         PageRange? pages = null;
