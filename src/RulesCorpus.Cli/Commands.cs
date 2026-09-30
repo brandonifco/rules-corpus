@@ -433,7 +433,7 @@ internal static class Commands
                 problems.Add((where, $"already uses the id '{id}'"));
             }
 
-            if (where.EndsWith(".path", StringComparison.Ordinal) && CorpusPaths.Collide(s.Value, path))
+            if (where.EndsWith(".path", StringComparison.Ordinal) && Collide(s.Value, path))
             {
                 problems.Add((where, $"'{s.Value}' collides with '{path}' (the same file ignoring case, or one inside the other)"));
             }
@@ -572,7 +572,14 @@ internal static class Commands
         {
             o.Line(d.ManifestDigestEqual
                 ? "no differences"
-                : "no artifact, baseline or segment differs; the difference is elsewhere in the manifest (corpus id or derivations)");
+                : "no artifact, baseline or segment differs; the difference is elsewhere in the manifest (corpus id, derivations or build definition)");
         }
+    }
+
+    private static bool Collide(string existing, string candidate)
+    {
+        var collisions = new PathCollisions();
+        collisions.Add(existing, "existing");
+        return collisions.Add(candidate, "import") is not null;
     }
 }

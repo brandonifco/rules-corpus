@@ -41,6 +41,7 @@
       "sourceId": "srd-5.2.1-excerpt"
     }
   ],
+  "buildDigest": "sha256:706057b0ae48d92ac01913ddc5a9135b74de8838a6c33944a5df5c5a17e7f50a",
   "contentDigest": "sha256:c98fcc46b7f0cbd66eb1ba2fc8c0bbb1f321e03bb793937f38697c23c58dbb2f",
   "corpusId": "srd-5.2.1-excerpt",
   "derivations": [
@@ -88,7 +89,7 @@
       }
     }
   ],
-  "manifestDigest": "sha256:38f3052f4997061ca262c96270853133316c683b1c8dea122bc4321700cb9c25",
+  "manifestDigest": "sha256:e1e772284e20aa76b1b46a27e4d2eefb86703cc485ede3ffff838aeac1ac4227",
   "schema": "rules-corpus/manifest/1",
   "segments": [
     {

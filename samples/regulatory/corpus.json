@@ -32,6 +32,7 @@
       "sourceId": "cfr-14-107-excerpt"
     }
   ],
+  "buildDigest": "sha256:5f87cd26a25b2ce2fec3b429c7e0cc22e166441fa23439266730f54609662a98",
   "contentDigest": "sha256:bf0f6e41b6cf7a3a7e1de818469fde25746159bc99905bd749fe4333ac1fa07e",
   "corpusId": "cfr-14-107-excerpt",
   "derivations": [
@@ -54,7 +55,7 @@
       }
     }
   ],
-  "manifestDigest": "sha256:19b2e689ed463675eaa9c12cb809299f1fb4723f9f64f4f476fb729df13435bd",
+  "manifestDigest": "sha256:fb8d63dc130d83e82bf36243b4623341adb35f68dfe1a6bbcfdc85397ab74666",
   "schema": "rules-corpus/manifest/1",
   "segments": [
     {
