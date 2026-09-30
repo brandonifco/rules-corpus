@@ -1,6 +1,6 @@
 # 0001. Scope, packages and layering
 
-**Status:** accepted for M1–M3; the M0 boundary freeze awaits Brandon's approval.
+**Status:** accepted. Brandon approved the M0 architecture on 2026-09-30.
 
 ## Decision
 

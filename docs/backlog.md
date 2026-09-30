@@ -3,11 +3,9 @@
 Ideas that are not current milestone work. An item moves into a milestone only with a named
 consumer or a release-blocking invariant (CLAUDE.md principle 6).
 
-- **M0 sign-off (Brandon).** The plan's M0 exit is "architecture document approved". The
-  architecture, format and decisions here are proposals until then.
 - **M4 calibration: FAA Part 107.** Describe `corpus/part107.xml` (eCFR XML, baseline
   `cfr-14-107`, `ecfr-versioner-xml`, as of 2026-01-01) as a corpus with a source-artifact
-  baseline, and replace the engine's vendored `scripts/factory/intake.py` digest check with
+  baseline, and replace the engine's vendored copy of the factory's intake digest check with
   `rules-corpus verify`. Segmenting it needs an XML adapter (M5).
 - **M4 calibration: SRD 5.2.1.** Describe `corpus/srd-5.2.1.txt` as the external `pdftotext`
   24.02.0 derivation of the unstored PDF, segmented by the text adapter with
