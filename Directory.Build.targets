@@ -1,0 +1,21 @@
+<Project>
+
+  <!-- A multi-targeted project restored with a single TargetFramework must not overwrite its
+       packages.lock.json.
+
+       Ordinary restore never does that: `dotnet restore` evaluates the outer project, where
+       TargetFramework is empty and TargetFrameworks lists both frameworks. Dependabot's NuGet
+       discovery does. It invokes Restore through ProjectReferenceBuildTargets, and MSBuild
+       calls a referenced multi-targeted project with one TargetFramework, so NuGet wrote a lock
+       file for that framework alone. Both of Dependabot's NuGet PRs dropped net8.0 from these
+       projects' lock files and failed locked restore (issue #63).
+       tools/lockfile-probe/check.sh reproduces that invocation and fails if it rewrites a lock
+       file.
+
+       In that context the lock file goes to obj/ instead. Nothing reads it there. The real lock
+       file is left for the full restore, which Dependabot also runs, to update correctly. -->
+  <PropertyGroup Condition="'$(TargetFrameworks)' != '' and '$(TargetFramework)' != ''">
+    <NuGetLockFilePath>$(MSBuildProjectExtensionsPath)single-framework.packages.lock.json</NuGetLockFilePath>
+  </PropertyGroup>
+
+</Project>

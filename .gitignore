@@ -1,0 +1,21 @@
+# Build output
+bin/
+obj/
+artifacts/
+TestResults/
+*.user
+.vs/
+.vscode/
+.idea/
+
+# Repo-local SDK
+/.dotnet/
+
+# Tooling
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+
+# Agent worktrees (created by the Agent tool; they are their own checkouts)
+.claude/worktrees/

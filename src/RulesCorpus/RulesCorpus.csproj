@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Multi-targeted so a net8.0 engine can reference it without upgrading first; rules-kernel
+       made the same commitment for the same reason. -->
+  <PropertyGroup>
+    <TargetFrameworks>net8.0;net10.0</TargetFrameworks>
+    <TargetFramework />
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <RootNamespace>RulesCorpus</RootNamespace>
+    <PackageId>RulesCorpus</PackageId>
+    <Description>Format-neutral corpus identity: content digests, derivation records, addressable segments, and a verifiable corpus manifest.</Description>
+  </PropertyGroup>
+
+  <!-- Referenced, not copied: an undeclared public-surface change fails the build against
+       PublicAPI.Shipped.txt / PublicAPI.Unshipped.txt. -->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" PrivateAssets="all" />
+  </ItemGroup>
+
+</Project>
