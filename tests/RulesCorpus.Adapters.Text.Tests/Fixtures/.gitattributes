@@ -1,0 +1,2 @@
+# Fixtures are evidence: their exact bytes are asserted, so git must never rewrite them.
+* -text

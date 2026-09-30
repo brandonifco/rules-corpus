@@ -1,0 +1,23 @@
+Test fixtures in this directory
+
+regulatory.txt
+  A plain-text rendering of 14 CFR 107.1, 107.2, 107.9, 107.11 and 107.12 (and the part
+  heading), taken from the eCFR XML of 14 CFR part 107. A work of the United States
+  Government, in the public domain. Each section heading, paragraph and citation is one line;
+  inline whitespace is collapsed and sections are separated by a blank line. Nothing else is
+  changed.
+
+rulebook.txt
+  An excerpt of the text of the System Reference Document 5.2.1: the last block of page 190,
+  pages 191 and 192, and the start of page 193, with the `{N}` page-marker lines, copied
+  byte for byte from srd-5.2.1.txt (the text pdftotext 24.02.0 extracts from the official
+  PDF, with a `{N}` marker line before each page N). It is licensed under the Creative
+  Commons Attribution 4.0 International License (CC-BY-4.0),
+  https://creativecommons.org/licenses/by/4.0/legalcode. The Apache License that covers the
+  rest of this repository does not apply to that text.
+
+  The attribution statement the SRD 5.2.1 requires, verbatim:
+
+  This work includes material from the System Reference Document 5.2.1 (“SRD 5.2.1”) by Wizards of the Coast LLC, available at https://www.dndbeyond.com/srd. The SRD 5.2.1 is licensed under the Creative Commons Attribution 4.0 International License, available at https://creativecommons.org/licenses/by/4.0/legalcode.
+
+  Changes: none beyond selecting the excerpt.
