@@ -5,8 +5,10 @@ rules-corpus reproducibly produces and verifies a portable, immutable, addressab
 content identity, derivation history and source mappings are explicit, without containing or
 interpreting any domain rules.
 
-**Status:** pre-1.0, under construction (milestones M1–M3 of the
-[plan](docs/rules-corpus-design-and-development-plan.docx)).
+**Status:** pre-1.0. Milestones M0–M3 of the
+[plan](docs/rules-corpus-design-and-development-plan.docx) are done; M4's identity
+calibration against both consumers is [recorded](docs/calibration/2026-09-30-m4-identities.md);
+the rest of M4 onward is in the [backlog](docs/backlog.md).
 
 - [Architecture](docs/architecture.md)
 - [Corpus format](docs/corpus-format.md)
