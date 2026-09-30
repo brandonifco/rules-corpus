@@ -22,7 +22,8 @@
 #      hashDerivation, asOf (absent = null) -- equals the pinned values exactly;
 #   5. reports the segment count (and asserts it where consumers.json pins one);
 #   6. runs `verify --rebuild` and checks the exit code consumers.json expects; where that is
-#      3 (not verified), also that `--allow-not-verified` turns it into 0;
+#      3 (not verified), also that `--expect-not-verified` with exactly the checks
+#      consumers.json pins turns it into 0 (decision 0008), as a consumer's gate would;
 #   7. builds a second fresh copy and requires every built file to be byte-identical.
 #
 # --corpus-file <path> takes the corpus bytes from a file instead of from the pinned commit,
@@ -84,12 +85,17 @@ paths = [s["path"] for s in build["sources"] if s["id"] == c["corpusArtifact"] a
 if len(paths) != 1:
     sys.exit(f"{c['buildDefinition']}: no stored source {c['corpusArtifact']!r}")
 seg = c["segments"]
+nv = c["verifyRebuildNotVerified"]
+if (c["verifyRebuildExit"] == 3) != (len(nv) > 0) or any("," in n for n in nv):
+    sys.exit(f"{sys.argv[1]}: {c['name']}: verifyRebuildNotVerified must name the not-verified checks "
+             f"exactly when verifyRebuildExit is 3, without commas")
 for key, value in (("COMMIT", c["commit"]), ("CORPUS_PATH", c["corpusPath"]),
                    ("PROVENANCE_PATH", c["provenancePath"]), ("BUILD_DEF", c["buildDefinition"]),
                    ("ARTIFACT", c["corpusArtifact"]), ("SOURCE_PATH", paths[0]),
                    ("EXPECTED_HASH", c["expected"]["contentHash"]),
                    ("EXPECTED_SEGMENTS", "" if seg is None else str(seg)),
-                   ("VERIFY_EXIT", str(c["verifyRebuildExit"]))):
+                   ("VERIFY_EXIT", str(c["verifyRebuildExit"])),
+                   ("EXPECT_NOT_VERIFIED", ",".join(nv))):
     print(f"{key}={shlex.quote(value)}")
 PY
 )"; then
@@ -249,7 +255,8 @@ if expect "$VERIFY_EXIT" "verify --rebuild" verify "$ONE" --rebuild; then
   grep -h '^not-verified' "$WORK/last.out" | sed 's/^/     /'
 fi
 if [[ "$VERIFY_EXIT" -eq 3 ]]; then
-  expect 0 "verify --rebuild --allow-not-verified" verify "$ONE" --rebuild --allow-not-verified
+  expect 0 "verify --rebuild --expect-not-verified $EXPECT_NOT_VERIFIED" \
+    verify "$ONE" --rebuild --expect-not-verified "$EXPECT_NOT_VERIFIED"
 fi
 
 # --------------------------------------------------------------- 7. a second build, byte for byte
