@@ -1,0 +1,38 @@
+# Dependency update policy for this repository.
+#
+# Without this file, an advisory against a test package, PyYAML or a pinned GitHub Action SHA
+# has no path to surface here: nothing watches for it. It does not merge anything -- these are
+# ordinary PRs subject to ./scripts/validate.sh full -- it only makes sure someone is told.
+#
+# Grouped and monthly rather than the defaults (ungrouped, as soon as possible): a stream of
+# single-package PRs trains reviewers to merge on reflex. One grouped PR per ecosystem per
+# month is small enough to read.
+version: 2
+updates:
+  - package-ecosystem: "nuget"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    groups:
+      nuget-dependencies:
+        patterns:
+          - "*"
+
+  # tools/requirements.txt: PyYAML, hash-pinned, for the repository checks.
+  - package-ecosystem: "pip"
+    directory: "/tools"
+    schedule:
+      interval: "monthly"
+    groups:
+      pip-dependencies:
+        patterns:
+          - "*"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    groups:
+      github-actions-dependencies:
+        patterns:
+          - "*"
