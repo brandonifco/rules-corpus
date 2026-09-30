@@ -8,15 +8,15 @@ consumer or a release-blocking invariant (CLAUDE.md principle 6).
   baseline, and replace the engine's vendored copy of the factory's intake digest check with
   `rules-corpus verify`. Segmenting it needs an XML adapter (M5). Identity half done:
   `tools/calibration/faa-part-107.corpus.build.json` projects the pinned baseline exactly
-  ([record](calibration/2026-09-30-m4-identities.md)); the pinned-commit run and the
-  replacement remain.
+  ([record](calibration/2026-09-30-m4-identities.md)); the pinned-commit run passed
+  too; the replacement remains.
 - **M4 calibration: SRD 5.2.1.** Describe `corpus/srd-5.2.1.txt` as the external `pdftotext`
   24.02.0 derivation of the unstored PDF, segmented by the text adapter with
   `pageMarker ^\{([0-9]+)\}$` and `pagesContiguous true`. Identity half done:
   `tools/calibration/srd-52-combat.corpus.build.json` projects the pinned baseline exactly,
   18373 segments on pages 1-364, no adapter refusal
-  ([record](calibration/2026-09-30-m4-identities.md)); the pinned-commit run and the
-  replacement remain.
+  ([record](calibration/2026-09-30-m4-identities.md)); the pinned-commit run passed
+  too; the replacement remains.
 - **rules-factory intake.** `HASH_DERIVATIONS` and `verify_declared_corpus_digest` are copied
   into each engine and have already drifted. Replacing them is the M4 prize. In the engines
   the vendored check is `verify_corpus`; `verify_declared_corpus_digest` is only in
