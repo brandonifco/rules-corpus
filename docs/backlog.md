@@ -27,6 +27,3 @@ consumer or a release-blocking invariant (CLAUDE.md principle 6).
 - **M5 second format.** XML is the highest-value candidate (the regulatory consumer's source
   is eCFR XML). PDF only with a pinned, empirically reproducible extractor.
 - **Multi-document corpora.** FRCP-style byte-slice derivations of a larger release.
-- **M4 exit 3 policy.** An engine whose corpus includes an unstored artifact or an external
-  derivation (srd-52-combat) always gets exit 3 from `verify`. Decide how an engine's gate
-  treats that before replacing its intake check.

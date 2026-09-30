@@ -16,7 +16,8 @@
       "provenancePath": "provenance.json",
       "repository": "https://github.com/brandonifco/faa-part-107",
       "segments": 0,
-      "verifyRebuildExit": 0
+      "verifyRebuildExit": 0,
+      "verifyRebuildNotVerified": []
     },
     {
       "buildDefinition": "tools/calibration/srd-52-combat.corpus.build.json",
@@ -34,7 +35,11 @@
       "provenancePath": "provenance.json",
       "repository": "https://github.com/brandonifco/srd-52-combat",
       "segments": null,
-      "verifyRebuildExit": 3
+      "verifyRebuildExit": 3,
+      "verifyRebuildNotVerified": [
+        "artifact srd-pdf",
+        "rebuild srd-extraction"
+      ]
     }
   ],
   "schema": "rules-corpus/calibration-consumers/1"
