@@ -159,7 +159,7 @@ A source span maps the segment back to evidence it came from:
 - **`contentDigest`** is the digest of the canonical JSON of
   `{ "baselines": [...], "segments": [...] }`, where each baseline is
   `{ "asOf"?, "contentHash", "hashDerivation", "sourceId" }` (`contentHash` being the named
-  artifact's digest) and each segment is `{ "artifact", "digest", "id", "length", "start" }`.
+  artifact's digest in its prefixed `sha256:` form) and each segment is `{ "artifact", "digest", "id", "length", "start" }`.
   It changes when the content engines cite or its addressing changes, and only then: not for
   acquisition metadata, tool versions, locators, source spans or paths.
 - **`manifestDigest`** is the digest of the canonical JSON of the whole manifest with the
@@ -215,6 +215,28 @@ artifact and `corpus.json`.
 
 Build refuses to write to a source path, refuses unknown members, and refuses a build
 definition whose ids collide.
+
+## Strict readings
+
+Where the rules above leave room, readers and the builder take the strict reading:
+
+- Artifact ids and derivation ids share one namespace.
+- The build definition requires `sources` (non-empty), `derivations`, `external` and
+  `baselines`, each possibly empty except `sources`; an adapter derivation requires
+  `parameters`. A manifest's `artifacts` is non-empty.
+- A segment's `sources`, when present, is non-empty; an empty array would be a second
+  canonical form of the same manifest.
+- Media types follow RFC 6838 restricted names, without parameters.
+- Artifact paths also refuse `\`, `:` and control characters, are at most 1024 characters
+  with at most 255 bytes per component, may not collide ignoring case, may not contain one
+  another, and may not pass through a symbolic link.
+- Segments are grouped in derivation order, with non-decreasing `start` within an artifact.
+  A segment's bytes are well-formed UTF-8.
+- A reproducible derivation has exactly one input, and that input is stored.
+- `MaxArtifactBytes` applies to declared (unstored) artifacts as well.
+- Verification requires `corpus.build.json` to be present, valid, and to name the same
+  `corpusId`. A packed corpus must be byte-for-byte the canonical packing of exactly the
+  expected files.
 
 ## Verification
 
