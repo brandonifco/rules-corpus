@@ -15,7 +15,7 @@ namespace RulesCorpus;
 ///
 /// <para>
 /// Parsing is strict. Uppercase hex is refused rather than normalized, because a digest is
-/// compared as written: a manifest that spells the same digest two ways would have two
+/// compared as written: a manifest that writes the same digest two ways would have two
 /// canonical forms and two manifest digests.
 /// </para>
 /// </summary>
