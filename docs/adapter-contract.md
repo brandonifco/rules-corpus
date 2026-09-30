@@ -21,7 +21,10 @@ public interface ICorpusAdapter
   byte span of the canonical bytes, an optional locator, and source spans into the **input**
   artifact (pages, a byte range, or both); the core fills in the input's artifact id.
 - An adapter signals refusal by throwing `CorpusAdapterException`. It never returns partial
-  output. An unknown parameter is a refusal, not something to ignore.
+  output. An unknown parameter is a refusal, not something to ignore. Any other exception an
+  adapter throws is still treated as a refusal of that input, naming the adapter and the
+  exception type, so a hostile corpus cannot crash the build or the verifier through an
+  adapter bug; only process failures such as running out of memory propagate.
 - The core validates everything the adapter returns — segment ids, bounds, UTF-8 boundaries,
   uniqueness, source-span ranges against the input — and refuses the build if any of it is
   wrong. An adapter's claims are checked, not trusted.

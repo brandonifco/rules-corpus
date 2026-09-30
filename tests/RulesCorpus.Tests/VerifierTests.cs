@@ -294,6 +294,21 @@ public class VerifierTests
     }
 
     [Fact]
+    public void Rebuild_fails_rather_than_crashing_when_the_adapter_throws_something_other_than_a_refusal()
+    {
+        using TempCorpus corpus = TempCorpus.Stored();
+        corpus.Build();
+        var throwing = new ScriptedAdapter(_ => throw new ArgumentOutOfRangeException("offset", "hostile parameters"));
+
+        VerificationReport report = Verify(corpus, new VerificationOptions { Rebuild = true, Adapters = [throwing] });
+
+        VerificationCheck check = Check(report, "rebuild notes-lines");
+        Assert.Equal(VerificationOutcome.Failed, check.Outcome);
+        Assert.Contains("adapter 'lines' failed with System.ArgumentOutOfRangeException", check.Detail, StringComparison.Ordinal);
+        Assert.Equal(VerificationOutcome.Failed, report.Outcome);
+    }
+
+    [Fact]
     public void Not_verified_is_never_reported_as_ok_across_every_outcome_mix()
     {
         using TempCorpus stored = TempCorpus.Stored();

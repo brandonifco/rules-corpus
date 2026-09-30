@@ -68,6 +68,15 @@ internal static class AdapterRun
             errors.Add(new CorpusError(at, $"adapter '{adapter.Id}' refused: {e.Message}"));
             return null;
         }
+        catch (Exception e) when (!IsCritical(e))
+        {
+            // The contract says an adapter refuses with CorpusAdapterException, but a bug an
+            // input or its parameters provoke is still a verdict on that input, not a reason
+            // for a hostile corpus to crash the build or the verifier. Only failures of the
+            // process itself propagate.
+            errors.Add(new CorpusError(at, $"adapter '{adapter.Id}' failed with {e.GetType().FullName}: {e.Message}"));
+            return null;
+        }
 
         if (output is null)
         {
@@ -129,6 +138,10 @@ internal static class AdapterRun
 
         return new AdapterResult(canonical, output.MediaType, output.Fidelity, output.Losses.ToArray(), segments);
     }
+
+    /// <summary>Failures of the process rather than of the adapter's work on this input.</summary>
+    private static bool IsCritical(Exception e) =>
+        e is OutOfMemoryException or StackOverflowException or AccessViolationException;
 
     private static void CheckLosses(AdapterOutput output, string o, List<CorpusError> errors)
     {
