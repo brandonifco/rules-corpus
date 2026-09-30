@@ -33,7 +33,7 @@ public class VerifierTests
         Assert.Equal(VerificationOutcome.Ok, report.Outcome);
         Assert.All(report.Checks, c => Assert.Equal(VerificationOutcome.Ok, c.Outcome));
         Assert.Equal(
-            ["schema", "uniqueness", "references", "derivations", "baselines", "segments", "source-spans", "limits", "content-digest", "manifest-digest",
+            ["schema", "manifest-form", "uniqueness", "references", "derivations", "baselines", "segments", "source-spans", "limits", "content-digest", "manifest-digest",
              "build-definition", "artifact notes", "artifact notes-canonical", "segments notes-canonical"],
             report.Checks.Select(c => c.Name));
     }
@@ -294,6 +294,21 @@ public class VerifierTests
     }
 
     [Fact]
+    public void Rebuild_fails_rather_than_crashing_when_the_adapter_throws_something_other_than_a_refusal()
+    {
+        using TempCorpus corpus = TempCorpus.Stored();
+        corpus.Build();
+        var throwing = new ScriptedAdapter(_ => throw new ArgumentOutOfRangeException("offset", "hostile parameters"));
+
+        VerificationReport report = Verify(corpus, new VerificationOptions { Rebuild = true, Adapters = [throwing] });
+
+        VerificationCheck check = Check(report, "rebuild notes-lines");
+        Assert.Equal(VerificationOutcome.Failed, check.Outcome);
+        Assert.Contains("adapter 'lines' failed with System.ArgumentOutOfRangeException", check.Detail, StringComparison.Ordinal);
+        Assert.Equal(VerificationOutcome.Failed, report.Outcome);
+    }
+
+    [Fact]
     public void Not_verified_is_never_reported_as_ok_across_every_outcome_mix()
     {
         using TempCorpus stored = TempCorpus.Stored();
@@ -311,5 +326,173 @@ public class VerifierTests
 
         Assert.All(reports, AssertNeverOkWhileAnythingIsNot);
         Assert.All(reports.SelectMany(r => r.Checks).Where(c => c.Outcome == VerificationOutcome.NotVerified), c => Assert.NotEmpty(c.Detail));
+    }
+}
+
+/// <summary>
+/// Verification binds every byte a corpus ships (decision 0007): corpus.json is exactly the
+/// writer's form, corpus.build.json is exactly the bytes buildDigest names, and the build
+/// definition declares exactly what the manifest records.
+/// </summary>
+public class BuildBindingTests
+{
+    private static VerificationReport Verify(TempCorpus corpus) =>
+        CorpusVerifier.Verify(CorpusFiles.FromDirectory(corpus.Root));
+
+    private static VerificationCheck Check(VerificationReport report, string name) =>
+        Assert.Single(report.Checks, c => c.Name == name);
+
+    [Fact]
+    public void A_build_definition_rewritten_after_the_build_fails()
+    {
+        using TempCorpus corpus = TempCorpus.Stored();
+        corpus.Build();
+        corpus.WriteText("corpus.build.json", """
+            {"schema":"rules-corpus/build/1","corpusId":"example",
+             "sources":[{"id":"zzz","path":"elsewhere/z.txt","mediaType":"application/pdf","origin":"someone else"}],
+             "derivations":[],"external":[],"baselines":[]}
+            """);
+
+        VerificationReport report = Verify(corpus);
+
+        VerificationCheck check = Check(report, "build-definition");
+        Assert.Equal(VerificationOutcome.Failed, check.Outcome);
+        Assert.Contains("buildDigest", check.Detail, StringComparison.Ordinal);
+        Assert.Contains("$.sources[0]", check.Detail, StringComparison.Ordinal);
+        Assert.Equal(VerificationOutcome.Failed, report.Outcome);
+    }
+
+    [Fact]
+    public void A_build_definition_differing_only_in_whitespace_fails_its_digest()
+    {
+        using TempCorpus corpus = TempCorpus.Stored();
+        corpus.Build();
+        corpus.WriteBytes("corpus.build.json", [.. corpus.ReadBytes("corpus.build.json"), (byte)'\n']);
+
+        VerificationCheck check = Check(Verify(corpus), "build-definition");
+
+        Assert.Equal(VerificationOutcome.Failed, check.Outcome);
+        Assert.Contains("the manifest records buildDigest", check.Detail, StringComparison.Ordinal);
+    }
+
+    public static TheoryData<string, string> Edits() => new()
+    {
+        { "source origin", "$.sources[0]" },
+        { "source notes", "$.sources[0]" },
+        { "source retrieved", "$.sources[0]" },
+        { "source media type", "$.sources[0]" },
+        { "source path", "$.sources[0]" },
+        { "source id", "$.sources[0]" },
+        { "an extra source", "$" },
+        { "adapter parameters", "$.derivations[0]" },
+        { "adapter id", "$.derivations[0]" },
+        { "adapter input", "$.derivations[0]" },
+        { "output path", "$.derivations[0].output" },
+        { "derivation id", "$.derivations[0]" },
+        { "baseline hash derivation", "$.baselines[0]" },
+        { "baseline as-of", "$.baselines[0]" },
+        { "a removed baseline", "$.baselines" },
+        { "corpus id", "$.corpusId" },
+    };
+
+    [Theory]
+    [MemberData(nameof(Edits))]
+    public void A_build_definition_bound_by_digest_that_declares_something_else_fails(string edit, string path)
+    {
+        using TempCorpus corpus = TempCorpus.Stored();
+        corpus.Build();
+        corpus.EditBuild(d =>
+        {
+            JsonNode source = d["sources"]![0]!;
+            JsonNode derivation = d["derivations"]![0]!;
+            JsonNode baseline = d["baselines"]![0]!;
+            switch (edit)
+            {
+                case "source origin": source["origin"] = "someone else"; break;
+                case "source notes": source["notes"] = "added later"; break;
+                case "source retrieved": source["retrieved"] = "2026-01-03"; break;
+                case "source media type": source["mediaType"] = "text/markdown"; break;
+                case "source path": source["path"] = "sources/other.txt"; break;
+                case "source id": source["id"] = "renamed"; derivation["input"] = "renamed"; baseline["artifact"] = "renamed"; break;
+                case "an extra source": d["sources"]!.AsArray().Add(new JsonObject { ["id"] = "more", ["path"] = "sources/more.txt", ["mediaType"] = "text/plain", ["origin"] = "o" }); break;
+                case "adapter parameters": derivation["parameters"] = new JsonObject { ["prefix"] = "x" }; break;
+                case "adapter id": derivation["adapter"] = "other"; break;
+                case "adapter input": d["sources"]!.AsArray().Insert(0, new JsonObject { ["id"] = "first", ["path"] = "sources/first.txt", ["mediaType"] = "text/plain", ["origin"] = "o" }); derivation["input"] = "first"; break;
+                case "output path": derivation["output"]!["path"] = "canonical/moved.txt"; break;
+                case "derivation id": derivation["id"] = "renamed-lines"; break;
+                case "baseline hash derivation": baseline["hashDerivation"] = "notes-other"; break;
+                case "baseline as-of": baseline.AsObject().Remove("asOf"); break;
+                case "a removed baseline": d["baselines"]!.AsArray().Clear(); break;
+                case "corpus id": d["corpusId"] = "another"; break;
+                default: throw new ArgumentException(edit);
+            }
+        });
+        ManifestEdits.BindToCurrentBuild(corpus);
+
+        VerificationReport report = Verify(corpus);
+
+        VerificationCheck check = Check(report, "build-definition");
+        Assert.Equal(VerificationOutcome.Failed, check.Outcome);
+        Assert.DoesNotContain("buildDigest", check.Detail, StringComparison.Ordinal);
+        Assert.Contains(path + ":", check.Detail, StringComparison.Ordinal);
+        Assert.Equal(VerificationOutcome.Ok, Check(report, "manifest-digest").Outcome);
+    }
+
+    [Fact]
+    public void An_external_derivation_that_disagrees_with_the_manifest_fails()
+    {
+        using TempCorpus corpus = TempCorpus.WithExternal();
+        corpus.Build();
+        corpus.EditBuild(d => d["external"]![0]!["tool"]!["version"] = "25.01.0");
+        ManifestEdits.BindToCurrentBuild(corpus);
+
+        VerificationCheck check = Check(Verify(corpus), "build-definition");
+
+        Assert.Equal(VerificationOutcome.Failed, check.Outcome);
+        Assert.Contains("$.external[0]:", check.Detail, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void A_rebound_but_unchanged_build_definition_still_verifies()
+    {
+        using TempCorpus corpus = TempCorpus.WithExternal();
+        corpus.Build();
+        corpus.EditBuild(_ => { });
+        ManifestEdits.BindToCurrentBuild(corpus);
+
+        VerificationReport report = Verify(corpus);
+
+        Assert.Equal(VerificationOutcome.Ok, Check(report, "build-definition").Outcome);
+        Assert.Equal(VerificationOutcome.Ok, Check(report, "manifest-form").Outcome);
+    }
+
+    [Fact]
+    public void A_manifest_reformatted_but_otherwise_identical_fails_its_form()
+    {
+        using TempCorpus corpus = TempCorpus.Stored();
+        corpus.Build();
+        corpus.WriteBytes("corpus.json", ManifestEdits.Bytes(ManifestEdits.Read(corpus)));
+
+        VerificationReport report = Verify(corpus);
+
+        Assert.Equal(VerificationOutcome.Failed, Check(report, "manifest-form").Outcome);
+        Assert.Equal(VerificationOutcome.Ok, Check(report, "manifest-digest").Outcome);
+        Assert.Equal(VerificationOutcome.Failed, report.Outcome);
+    }
+
+    [Fact]
+    public void Two_verified_packs_of_one_manifest_are_byte_identical()
+    {
+        using TempCorpus a = TempCorpus.WithExternal();
+        using TempCorpus b = TempCorpus.WithExternal();
+        a.Build();
+        b.Build();
+        var packA = new MemoryStream();
+        var packB = new MemoryStream();
+
+        CorpusPacker.Pack(a.Root, packA, allowNotVerified: true);
+        CorpusPacker.Pack(b.Root, packB, allowNotVerified: true);
+
+        Assert.Equal(packA.ToArray(), packB.ToArray());
     }
 }

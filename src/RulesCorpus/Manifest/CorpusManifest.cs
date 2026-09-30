@@ -20,6 +20,7 @@ public sealed class CorpusManifest
 {
     internal CorpusManifest(
         string corpusId,
+        ContentDigest buildDigest,
         IReadOnlyList<ManifestArtifact> artifacts,
         IReadOnlyList<ManifestDerivation> derivations,
         IReadOnlyList<ManifestBaseline> baselines,
@@ -28,16 +29,24 @@ public sealed class CorpusManifest
         ContentDigest manifestDigest)
     {
         CorpusId = corpusId;
-        Artifacts = artifacts;
-        Derivations = derivations;
-        Baselines = baselines;
-        Segments = segments;
+        BuildDigest = buildDigest;
+        Artifacts = ReadOnly.List(artifacts);
+        Derivations = ReadOnly.List(derivations);
+        Baselines = ReadOnly.List(baselines);
+        Segments = ReadOnly.List(segments);
         ContentDigest = contentDigest;
         ManifestDigest = manifestDigest;
     }
 
     /// <summary>The corpus id. Deliberately outside content identity (decision 0002).</summary>
     public string CorpusId { get; }
+
+    /// <summary>
+    /// The digest of the exact bytes of the <c>corpus.build.json</c> the corpus was built from.
+    /// Covered by the manifest identity and not the content identity, so the build definition
+    /// shipped with a corpus is bound to it byte for byte (decision 0007).
+    /// </summary>
+    public ContentDigest BuildDigest { get; }
 
     /// <summary>Every artifact: sources in build-definition order, then adapter outputs in derivation order.</summary>
     public IReadOnlyList<ManifestArtifact> Artifacts { get; }

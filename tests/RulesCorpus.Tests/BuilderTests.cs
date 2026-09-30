@@ -108,6 +108,7 @@ public class BuilderDeterminismTests
                 }
               ],
               "baselines": [],
+              "buildDigest": "{{ContentDigest.Compute(corpus.ReadBytes("corpus.build.json"))}}",
               "contentDigest": "{{m.ContentDigest}}",
               "corpusId": "tiny",
               "derivations": [
@@ -398,6 +399,28 @@ public class BuilderRefusalTests
 
         ManifestEdits.AssertError(e, "$.derivations[0]", "adapter 'lines' refused: unknown parameter 'unknown'");
         AssertNothingWritten(corpus);
+    }
+
+    [Fact]
+    public void An_adapter_that_throws_something_other_than_a_refusal_refuses_the_build_naming_the_adapter()
+    {
+        using TempCorpus corpus = TempCorpus.Stored();
+        var adapter = new ScriptedAdapter(_ => throw new ArgumentOutOfRangeException("offset", "hostile input"));
+
+        CorpusException e = Refused(corpus, adapter);
+
+        ManifestEdits.AssertError(e, "$.derivations[0]", "adapter 'lines' failed with System.ArgumentOutOfRangeException");
+        ManifestEdits.AssertError(e, "$.derivations[0]", "hostile input");
+        AssertNothingWritten(corpus);
+    }
+
+    [Fact]
+    public void An_adapter_running_out_of_memory_is_not_turned_into_a_refusal()
+    {
+        using TempCorpus corpus = TempCorpus.Stored();
+        var adapter = new ScriptedAdapter(_ => throw new OutOfMemoryException());
+
+        Assert.Throws<OutOfMemoryException>(() => corpus.Build(adapter));
     }
 
     public static TheoryData<string, string, string> BadOutputs() => new()

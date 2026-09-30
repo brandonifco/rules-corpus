@@ -15,6 +15,7 @@ namespace RulesCorpus;
 public static class CorpusVerifier
 {
     private const string SchemaCheck = "schema";
+    private const string ManifestFormCheck = "manifest-form";
     private const string BuildDefinitionCheck = "build-definition";
     private const string PackageCheck = "package";
 
@@ -83,6 +84,7 @@ public static class CorpusVerifier
         if (manifest is null || results is null)
         {
             checks.Add(Failed(SchemaCheck, errors));
+            checks.Add(new VerificationCheck(ManifestFormCheck, VerificationOutcome.NotVerified, "not examined: the manifest did not read"));
             foreach (string name in ManifestValidator.CheckNames)
             {
                 checks.Add(new VerificationCheck(name, VerificationOutcome.NotVerified, "not examined: the manifest did not read"));
@@ -92,6 +94,13 @@ public static class CorpusVerifier
         }
 
         checks.Add(new VerificationCheck(SchemaCheck, VerificationOutcome.Ok, "corpus.json is canonical JSON and every member matches schema rules-corpus/manifest/1"));
+
+        // The writer is the only formatter of corpus.json (decision 0007): any other bytes for
+        // the same manifest would make two packings of one corpus differ.
+        bool canonicalForm = manifest.ToUtf8Json().AsSpan().SequenceEqual(bytes);
+        checks.Add(canonicalForm
+            ? new VerificationCheck(ManifestFormCheck, VerificationOutcome.Ok, "corpus.json is byte for byte the form the writer produces")
+            : new VerificationCheck(ManifestFormCheck, VerificationOutcome.Failed, "corpus.json is not byte for byte the form the writer produces (two-space indentation, one member per line, a final newline); its whitespace or member order was changed after it was written"));
         foreach ((string name, List<CorpusError> checkErrors) in results)
         {
             checks.Add(checkErrors.Count == 0
@@ -99,7 +108,7 @@ public static class CorpusVerifier
                 : Failed(name, checkErrors));
         }
 
-        if (errors.Count == 0)
+        if (errors.Count == 0 && canonicalForm)
         {
             verified[Vocabulary.ManifestFile] = ContentDigest.Compute(bytes);
         }
@@ -117,17 +126,27 @@ public static class CorpusVerifier
         {
             errors.Add(new CorpusError(Vocabulary.BuildFile, problem));
         }
-        else if (BuildDefinition.Read(bytes, errors) is { } definition
-            && manifest is not null
-            && !string.Equals(definition.CorpusId, manifest.CorpusId, StringComparison.Ordinal))
+        else if (BuildDefinition.Read(bytes, errors) is { } definition && manifest is not null)
         {
-            errors.Add(new CorpusError("$.corpusId", $"'{definition.CorpusId}' differs from the manifest's '{manifest.CorpusId}'"));
+            // Bound byte for byte by buildDigest, and declaring exactly what the manifest
+            // records (decision 0007).
+            ContentDigest digest = ContentDigest.Compute(bytes);
+            if (digest != manifest.BuildDigest)
+            {
+                errors.Add(new CorpusError(Vocabulary.BuildFile, $"digests to {digest}; the manifest records buildDigest {manifest.BuildDigest}"));
+            }
+
+            errors.AddRange(definition.Disagreements(manifest));
         }
 
-        if (errors.Count == 0)
+        if (errors.Count == 0 && manifest is null)
+        {
+            checks.Add(new VerificationCheck(BuildDefinitionCheck, VerificationOutcome.NotVerified, "corpus.build.json is valid, but it was not compared with a manifest that did not read"));
+        }
+        else if (errors.Count == 0)
         {
             verified[Vocabulary.BuildFile] = ContentDigest.Compute(bytes);
-            checks.Add(new VerificationCheck(BuildDefinitionCheck, VerificationOutcome.Ok, "corpus.build.json is present and valid"));
+            checks.Add(new VerificationCheck(BuildDefinitionCheck, VerificationOutcome.Ok, "corpus.build.json matches buildDigest and declares exactly what the manifest records"));
         }
         else
         {

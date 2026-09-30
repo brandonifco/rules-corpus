@@ -57,7 +57,8 @@ be formatted:
 
 `corpus.json` on disk is the same form with two-space indentation, `": "` after keys, one
 member or element per line, and a final `\n`. Readers accept any whitespace; writers produce
-exactly this. The writer is the only thing that formats it.
+exactly this. The writer is the only thing that formats it, and verification requires the file
+to be exactly this form ([decision 0007](decisions/0007-verification-binds-every-shipped-byte.md)).
 
 ## The manifest: `corpus.json`
 
@@ -65,6 +66,7 @@ exactly this. The writer is the only thing that formats it.
 {
   "artifacts": [ ... ],
   "baselines": [ ... ],
+  "buildDigest": "sha256:...",
   "contentDigest": "sha256:...",
   "corpusId": "example",
   "derivations": [ ... ],
@@ -75,6 +77,10 @@ exactly this. The writer is the only thing that formats it.
 ```
 
 Unknown members anywhere are an error. Every member below is required unless marked optional.
+
+`buildDigest` is the digest of the exact bytes of the `corpus.build.json` the corpus was built
+from. The build definition is hand-written, so its bytes are bound here rather than by a
+canonical form.
 
 ### `artifacts[]`
 
@@ -163,7 +169,8 @@ A source span maps the segment back to evidence it came from:
   It changes when the content engines cite or its addressing changes, and only then: not for
   acquisition metadata, tool versions, locators, source spans or paths.
 - **`manifestDigest`** is the digest of the canonical JSON of the whole manifest with the
-  `manifestDigest` member removed. It changes when anything declared changes.
+  `manifestDigest` member removed. It changes when anything declared changes, including
+  `buildDigest`, which `contentDigest` does not cover.
 
 Content identity and manifest identity are distinct so a metadata edit cannot pass for a
 content change, and a content change cannot hide behind a stable label
@@ -227,16 +234,22 @@ Where the rules above leave room, readers and the builder take the strict readin
 - A segment's `sources`, when present, is non-empty; an empty array would be a second
   canonical form of the same manifest.
 - Media types follow RFC 6838 restricted names, without parameters.
-- Artifact paths also refuse `\`, `:` and control characters, are at most 1024 characters
-  with at most 255 bytes per component, may not collide ignoring case, may not contain one
-  another, and may not pass through a symbolic link.
+- Artifact path components use only ASCII letters, digits, `.`, `_` and `-`; do not end in
+  `.`; and are not a Windows device name (`con`, `prn`, `aux`, `nul`, `com0`–`com9`,
+  `lpt0`–`lpt9`, in any case, with or without an extension: `nul.txt` is refused). Anything
+  wider aliases on some system: Windows and macOS fold case, macOS normalizes Unicode (which
+  this library cannot compare, [decision 0003](decisions/0003-no-unicode-normalization-in-text-v1.md)),
+  and Windows drops a trailing `.`. Paths are at most 1024 characters with at most 255 per
+  component, may not collide ignoring case, may not contain one another, and may not pass
+  through a symbolic link.
+- Every file read from a corpus directory is a regular file: a named pipe, device or socket
+  at a path is refused without being opened. Build replaces each output by renaming a new
+  file over it, so a hard link at an output path is unlinked, never written through.
 - Segments are grouped in derivation order, with non-decreasing `start` within an artifact.
   A segment's bytes are well-formed UTF-8.
 - A reproducible derivation has exactly one input, and that input is stored.
 - `MaxArtifactBytes` applies to declared (unstored) artifacts as well.
-- Verification requires `corpus.build.json` to be present, valid, and to name the same
-  `corpusId`. A packed corpus must be byte-for-byte the canonical packing of exactly the
-  expected files.
+- A packed corpus must be byte-for-byte the canonical packing of exactly the expected files.
 
 ## Verification
 
@@ -251,12 +264,31 @@ artifact and range; derivation order and one-derivation-per-derived-artifact; ba
 uniqueness; `contentDigest`; `manifestDigest`. With `--rebuild`, every `reproducible`
 derivation is re-run and its output and segments must be byte-identical to the manifest.
 
+Verification also binds every byte a corpus ships
+([decision 0007](decisions/0007-verification-binds-every-shipped-byte.md)):
+
+- `corpus.json` is byte for byte the on-disk form the writer produces for the manifest it
+  holds (check `manifest-form`).
+- `corpus.build.json` is present, valid, digests to `buildDigest`, and declares exactly what
+  the manifest records, in the same order (check `build-definition`): the same `corpusId`;
+  one artifact per source (`id`, `path`, `stored`, `mediaType`, declared `bytes` and `digest`
+  when unstored, `origin`, `retrieved` and `notes`, or `derivedBy` for an external output);
+  one derivation per `external[]` entry (`id`, `inputs`, `output`, `tool`, `parameters`,
+  `fidelity`, `losses`); for each `derivations[]` entry, an artifact (`id`, `path`,
+  `derivedBy`) and a derivation (`id`, `tool.id` the adapter, `inputs` the one input,
+  `output`, `parameters`); and the same `baselines`. Any difference fails. What the
+  definition does not declare (stored bytes and digests, an adapter's version, media type,
+  fidelity and losses) is checked against the files and, with `--rebuild`, the adapter.
+
 ## Packing
 
 `rules-corpus pack` verifies first, then writes a POSIX tar (PAX format) containing
 `corpus.build.json`, `corpus.json` and every stored artifact, in ordinal path order, each entry
 a regular file with mode 0644, uid and gid 0, empty user and group names, and modification time
-0. The same corpus always packs to the same bytes. Tar is used rather than zip because
+0. The same corpus always packs to the same bytes, and because every file in the archive is
+bound by the manifest (artifacts by digest, `corpus.build.json` by `buildDigest`, `corpus.json`
+by being the writer's form of the manifest), two verified packings with the same
+`manifestDigest` are the same bytes. Tar is used rather than zip because
 compressed output would depend on the compressor's version.
 
 ## Limits

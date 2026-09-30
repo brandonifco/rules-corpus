@@ -125,10 +125,10 @@ public sealed class RefusalTests
     }
 
     [Fact]
-    public void Repeated_page_number_giving_duplicate_block_ids_is_refused()
+    public void A_page_number_recurring_after_another_page_giving_duplicate_block_ids_is_refused()
     {
         AssertRefused(
-            Utf8("{1}\na\n{1}\nb"), "Segment id 'p1.b1' occurs twice",
+            Utf8("{1}\na\n{2}\nb\n{1}\nc"), "Segment id 'p1.b1' occurs twice",
             ("segmentation", "blocks"), ("pageMarker", @"^\{(\d+)\}$"));
     }
 
@@ -207,6 +207,20 @@ public sealed class RefusalTests
     [Fact]
     public void Parameters_are_checked_before_the_input() =>
         AssertRefused([0xFF], "Unknown parameter 'x'", ("x", "y"));
+
+    [Theory]
+    [InlineData("x\U0001F600" + "1\n", @"[\uDC00-\uDFFF]([0-9]+)")] // starts on the low half
+    [InlineData("1\U0001F600x\n", @"([0-9]+)[\uD800-\uDBFF]")] // ends after the high half
+    [InlineData("a 1\U0001F600\n", @"[\uDC00-\uDFFF]|([0-9]+)[\uD800-\uDBFF]")]
+    public void A_page_marker_match_that_splits_a_surrogate_pair_is_refused(string text, string pattern) =>
+        AssertRefused(Utf8(text), "inside a surrogate pair", ("pageMarker", pattern));
+
+    [Fact]
+    public void A_heading_locator_that_captures_half_a_surrogate_pair_is_refused() =>
+        AssertRefused(
+            Utf8("a \U0001F600\n"),
+            "inside a surrogate pair",
+            ("segmentation", "headings"), ("headingPattern", "^(?<id>[a-z]+) (?<locator>.)"));
 
     [Fact]
     public void Null_input_is_an_argument_error_not_a_refusal() =>

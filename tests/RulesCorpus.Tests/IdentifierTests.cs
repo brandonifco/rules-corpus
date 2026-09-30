@@ -166,3 +166,57 @@ public class CorpusGrammarTests
         Assert.False(CorpusGrammar.IsMediaType("a/" + new string('b', 127)));
     }
 }
+
+public class ArtifactPathTests
+{
+    [Theory]
+    [InlineData("sources/notes.txt")]
+    [InlineData("a")]
+    [InlineData("A-b_c.d/e.f.g")]
+    [InlineData(".hidden/x")]
+    [InlineData("console.txt")]
+    [InlineData("com10")]
+    [InlineData("lpt")]
+    [InlineData("nul-device")]
+    public void Portable_paths_are_accepted(string path) =>
+        Assert.Null(Internal.CorpusPaths.Problem(path));
+
+    [Theory]
+    [InlineData("sources/café.txt", "U+00E9")]
+    [InlineData("sources/café.txt", "U+0301")]
+    [InlineData("sources/my notes.txt", "U+0020")]
+    [InlineData("sources/a~b", "'~'")]
+    [InlineData("sources/a*b", "'*'")]
+    [InlineData("sources/a?b", "'?'")]
+    [InlineData("sources/a\"b", "'\"'")]
+    [InlineData("sources/a<b", "'<'")]
+    [InlineData("sources/a|b", "'|'")]
+    [InlineData("sources/notes.", "ends in '.'")]
+    [InlineData("sources./notes.txt", "ends in '.'")]
+    [InlineData("sources/...", "ends in '.'")]
+    [InlineData("con", "device name")]
+    [InlineData("CON", "device name")]
+    [InlineData("sources/nul.txt", "device name")]
+    [InlineData("sources/Aux.tar.gz", "device name")]
+    [InlineData("prn/x", "device name")]
+    [InlineData("com0", "device name")]
+    [InlineData("COM9.log", "device name")]
+    [InlineData("lpt0", "device name")]
+    [InlineData("sources/LPT9", "device name")]
+    [InlineData("./x", "'.' component")]
+    [InlineData("x/..", "'..' component")]
+    public void Paths_that_alias_or_name_a_device_on_some_system_are_refused(string path, string reason)
+    {
+        string? problem = Internal.CorpusPaths.Problem(path);
+
+        Assert.NotNull(problem);
+        Assert.Contains(reason, problem, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void A_component_is_at_most_255_bytes()
+    {
+        Assert.Null(Internal.CorpusPaths.Problem("a/" + new string('b', 255)));
+        Assert.NotNull(Internal.CorpusPaths.Problem("a/" + new string('b', 256)));
+    }
+}

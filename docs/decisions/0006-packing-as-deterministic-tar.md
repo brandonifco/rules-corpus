@@ -15,6 +15,13 @@ implementation, which .NET changed in 9.0 (zlib to zlib-ng); an uncompressed arc
 such dependency. Consumers that want compression can compress the tar; the tar's digest is
 the one that means something.
 
+That holds because verification binds every byte in the archive to the manifest
+([decision 0007](0007-verification-binds-every-shipped-byte.md)): stored artifacts by digest,
+`corpus.build.json` by `buildDigest`, and `corpus.json` by being exactly the writer's form. Two
+packs that verify with the same `manifestDigest` are the same bytes. Before 0007 they need not
+have been: `corpus.json` could be reformatted and `corpus.build.json` rewritten without
+failing verification.
+
 ## Evidence: why the writer is ours
 
 On SDK 10.0.112, `System.Formats.Tar`'s `TarWriter` names every PAX extended-header entry

@@ -310,6 +310,167 @@ public class ManifestValidationTests
     }
 }
 
+/// <summary>
+/// A validated manifest cannot be changed by a caller: every collection it exposes is a
+/// read-only wrapper, not the list or dictionary it was built from behind an interface.
+/// </summary>
+public class ManifestImmutabilityTests
+{
+    private static void AssertReadOnly<T>(IReadOnlyList<T> list)
+    {
+        Assert.False(list is List<T>, "a List<T> can be downcast and mutated");
+        Assert.False(list is T[], "an array's elements can be replaced after a downcast");
+        IList<T> asList = Assert.IsAssignableFrom<IList<T>>(list);
+        Assert.True(asList.IsReadOnly);
+        Assert.Throws<NotSupportedException>(() => asList.Clear());
+    }
+
+    private static void AssertReadOnly(IReadOnlyDictionary<string, string> map)
+    {
+        Assert.False(map is SortedDictionary<string, string>, "a SortedDictionary can be downcast and mutated");
+        Assert.False(map is Dictionary<string, string>, "a Dictionary can be downcast and mutated");
+        IDictionary<string, string> asMap = Assert.IsAssignableFrom<IDictionary<string, string>>(map);
+        Assert.True(asMap.IsReadOnly);
+        Assert.Throws<NotSupportedException>(() => asMap["injected"] = "x");
+    }
+
+    private static void AssertDeeplyReadOnly(CorpusManifest m)
+    {
+        AssertReadOnly(m.Artifacts);
+        AssertReadOnly(m.Derivations);
+        AssertReadOnly(m.Baselines);
+        AssertReadOnly(m.Segments);
+        Assert.All(m.Derivations, d =>
+        {
+            AssertReadOnly(d.Inputs);
+            AssertReadOnly(d.Losses);
+            AssertReadOnly(d.Parameters);
+        });
+        Assert.All(m.Segments, s => AssertReadOnly(s.Sources));
+    }
+
+    [Fact]
+    public void A_parsed_manifest_exposes_only_read_only_collections()
+    {
+        using TempCorpus corpus = TempCorpus.WithExternal();
+        corpus.Build();
+
+        CorpusManifest m = CorpusManifest.Parse(corpus.ReadBytes("corpus.json"));
+
+        Assert.Contains(m.Derivations, d => d.Parameters.Count > 0);
+        Assert.Contains(m.Derivations, d => d.Losses.Count > 0);
+        Assert.Contains(m.Segments, s => s.Sources.Count > 0);
+        AssertDeeplyReadOnly(m);
+    }
+
+    [Fact]
+    public void A_built_manifest_exposes_only_read_only_collections()
+    {
+        using TempCorpus corpus = TempCorpus.WithExternal();
+
+        AssertDeeplyReadOnly(corpus.Build());
+    }
+
+    [Fact]
+    public void Parameters_keep_their_ordinal_key_order()
+    {
+        using TempCorpus corpus = TempCorpus.Stored();
+        corpus.EditBuild(d => d["derivations"]![0]!["parameters"] = new JsonObject { ["prefix"] = "p" });
+        corpus.Build();
+        byte[] edited = corpus.ReadBytes("corpus.json");
+
+        CorpusManifest m = CorpusManifest.Parse(edited);
+
+        Assert.Equal(edited, m.ToUtf8Json());
+    }
+}
+
+/// <summary>
+/// Path collisions are checked in time linear in the number of paths. Comparing every pair
+/// took about a minute at 64,000 artifacts. The bounds are generous, to catch the quadratic
+/// shape rather than to time the machine.
+/// </summary>
+public class PathCollisionScaleTests
+{
+    private const int Count = 50_000;
+    private static readonly TimeSpan Bound = TimeSpan.FromSeconds(10);
+    private static readonly string Zero = "sha256:" + new string('0', 64);
+
+    [Fact]
+    public void A_manifest_with_many_artifacts_validates_in_linear_time_and_still_finds_a_collision()
+    {
+        var json = new StringBuilder($"{{\"schema\":\"rules-corpus/manifest/1\",\"corpusId\":\"x\",\"buildDigest\":\"{Zero}\",\"artifacts\":[");
+        for (int i = 0; i < Count; i++)
+        {
+            // The last path differs from the first only by case.
+            string path = i == Count - 1 ? "D0/F0" : $"d{i % 100}/f{i}";
+            json.Append(i == 0 ? "" : ",")
+                .Append($"{{\"id\":\"a{i}\",\"role\":\"source\",\"mediaType\":\"text/plain\",\"bytes\":0,\"digest\":\"{Zero}\",")
+                .Append($"\"stored\":true,\"path\":\"{path}\",\"acquisition\":{{\"origin\":\"o\"}}}}");
+        }
+
+        json.Append($"],\"derivations\":[],\"baselines\":[],\"segments\":[],\"contentDigest\":\"{Zero}\",\"manifestDigest\":\"{Zero}\"}}");
+        byte[] bytes = Encoding.UTF8.GetBytes(json.ToString());
+        var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+
+        CorpusException e = ManifestEdits.ParseFails(bytes);
+
+        Assert.True(stopwatch.Elapsed < Bound, $"took {stopwatch.Elapsed}");
+        ManifestEdits.AssertError(e, $"$.artifacts[{Count - 1}].path", "collides with $.artifacts[0].path 'd0/f0'");
+        Assert.Single(e.Errors, x => x.Reason.Contains("collides", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void A_build_definition_with_many_sources_is_read_in_linear_time()
+    {
+        var json = new StringBuilder("{\"schema\":\"rules-corpus/build/1\",\"corpusId\":\"x\",\"sources\":[");
+        for (int i = 0; i < Count; i++)
+        {
+            json.Append(i == 0 ? "" : ",").Append($"{{\"id\":\"s{i}\",\"path\":\"d{i % 100}/f{i}\",\"mediaType\":\"text/plain\",\"origin\":\"o\"}}");
+        }
+
+        json.Append("],\"derivations\":[],\"external\":[],\"baselines\":[]}");
+        var errors = new List<CorpusError>();
+        var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+
+        Build.BuildDefinition? definition = Build.BuildDefinition.Read(Encoding.UTF8.GetBytes(json.ToString()), errors);
+
+        Assert.True(stopwatch.Elapsed < Bound, $"took {stopwatch.Elapsed}");
+        Assert.Empty(errors);
+        Assert.Equal(Count, definition!.Sources.Count);
+    }
+
+    [Theory]
+    [InlineData("a/b", "a", "one inside the other")]
+    [InlineData("a", "a/b", "one inside the other")]
+    [InlineData("a/b/c", "A/B", "one inside the other")]
+    [InlineData("A/B", "a/b/c", "one inside the other")]
+    [InlineData("a/b", "A/b", "the same file")]
+    public void Collisions_are_found_whichever_path_comes_first(string first, string second, string reason)
+    {
+        var index = new Internal.PathCollisions();
+
+        Assert.Null(index.Add(first, "first"));
+        string? collision = index.Add(second, "second");
+
+        Assert.NotNull(collision);
+        Assert.Contains("first", collision, StringComparison.Ordinal);
+        Assert.Contains(reason, collision, StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData("a/b", "a/bc")]
+    [InlineData("a/b", "ab")]
+    [InlineData("a.b/c", "a/b/c")]
+    public void Paths_that_share_only_a_prefix_do_not_collide(string first, string second)
+    {
+        var index = new Internal.PathCollisions();
+
+        Assert.Null(index.Add(first, "first"));
+        Assert.Null(index.Add(second, "second"));
+    }
+}
+
 public class TwoIdentitiesTests
 {
     [Fact]
