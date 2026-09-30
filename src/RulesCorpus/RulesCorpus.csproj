@@ -19,4 +19,10 @@
     <PackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" PrivateAssets="all" />
   </ItemGroup>
 
+  <!-- The canonical JSON writer, readers and validators are internal; their byte vectors and
+       refusal cases are tested directly. -->
+  <ItemGroup>
+    <InternalsVisibleTo Include="RulesCorpus.Tests" />
+  </ItemGroup>
+
 </Project>
