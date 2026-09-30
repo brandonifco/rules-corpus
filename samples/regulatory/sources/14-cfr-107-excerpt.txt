@@ -1,0 +1,32 @@
+PART 107—SMALL UNMANNED AIRCRAFT SYSTEMS
+
+§ 107.1 Applicability.
+(a) Except as provided in paragraph (b) of this section, this part applies to the registration, airman certification, and operation of civil small unmanned aircraft systems within the United States. This part also applies to the eligibility of civil small unmanned aircraft systems to operate over human beings in the United States.
+(b) This part does not apply to the following:
+(1) Air carrier operations;
+(2) Any aircraft subject to the provisions of 49 U.S.C. 44809;
+(3) Any operation that the holder of an exemption under section 333 of Public Law 112-95 or 49 U.S.C. 44807 elects to conduct pursuant to the exemption, unless otherwise specified in the exemption; or
+(4) Any operation that a person elects to conduct under part 91 of this chapter with a small unmanned aircraft system that has been issued an airworthiness certificate.
+[Amdt. 107-8, 86 FR 4381, Jan. 15, 2021]
+
+§ 107.2 Applicability of certification procedures for products and articles.
+The provisions of part 21 of this chapter do not apply to small unmanned aircraft systems operated under this part unless the small unmanned aircraft system will operate over human beings in accordance with § 107.140.
+[Amdt. 107-8, 86 FR 4381, Jan. 15, 2021]
+
+§ 107.9 Safety event reporting.
+No later than 10 calendar days after an operation that meets the criteria of either paragraph (a) or (b) of this section, a remote pilot in command must report to the FAA, in a manner acceptable to the Administrator, any operation of the small unmanned aircraft involving at least:
+(a) Serious injury to any person or any loss of consciousness; or
+(b) Damage to any property, other than the small unmanned aircraft, unless one of the following conditions is satisfied:
+(1) The cost of repair (including materials and labor) does not exceed $500; or
+(2) The fair market value of the property does not exceed $500 in the event of total loss.
+[Docket FAA-2015-0150, Amdt. 107-1, 81 FR 42209, June 28, 2016, as amended by Docket FAA-2022-1355, Amdt. 107-10, 87 FR 75846, Dec. 9 2022]
+
+§ 107.11 Applicability.
+This subpart applies to the operation of all civil small unmanned aircraft systems subject to this part.
+
+§ 107.12 Requirement for a remote pilot certificate with a small UAS rating.
+(a) Except as provided in paragraph (c) of this section, no person may manipulate the flight controls of a small unmanned aircraft system unless:
+(1) That person has a remote pilot certificate with a small UAS rating issued pursuant to subpart C of this part and satisfies the requirements of § 107.65; or
+(2) That person is under the direct supervision of a remote pilot in command and the remote pilot in command has the ability to immediately take direct control of the flight of the small unmanned aircraft.
+(b) Except as provided in paragraph (c) of this section, no person may act as a remote pilot in command unless that person has a remote pilot certificate with a small UAS rating issued pursuant to Subpart C of this part and satisfies the requirements of § 107.65.
+(c) The Administrator may, consistent with international standards, authorize an airman to operate a civil foreign-registered small unmanned aircraft without an FAA-issued remote pilot certificate with a small UAS rating.

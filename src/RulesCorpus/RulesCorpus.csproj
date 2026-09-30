@@ -20,9 +20,12 @@
   </ItemGroup>
 
   <!-- The canonical JSON writer, readers and validators are internal; their byte vectors and
-       refusal cases are tested directly. -->
+       refusal cases are tested directly. The CLI (assembly rules-corpus) uses the same internals
+       so it reads files through the corpus path rules and writes JSON through the one canonical
+       writer, instead of carrying a second copy of either. -->
   <ItemGroup>
     <InternalsVisibleTo Include="RulesCorpus.Tests" />
+    <InternalsVisibleTo Include="rules-corpus" />
   </ItemGroup>
 
 </Project>

@@ -22,7 +22,7 @@ corpus.build.json ──► rules-corpus build ──► derived artifacts + cor
 |---|---|---|
 | `src/RulesCorpus` | identifiers, digests, canonical JSON, manifest and build-definition models, adapter contract, builder, verifier, packing | BCL only |
 | `src/RulesCorpus.Adapters.Text` | the `text` adapter | `RulesCorpus` |
-| `src/RulesCorpus.Cli` | the `rules-corpus` command | both of the above |
+| `src/RulesCorpus.Cli` | the `rules-corpus` command | both of the above; also the core's internals, so it reads files through the same path rules and writes JSON through the one canonical writer |
 
 The reference graph is enforced by `tools/repo-checks.py --only layering`.
 Why the kernel is not referenced: [decision 0001](decisions/0001-scope-packages-and-layering.md).
@@ -49,10 +49,10 @@ The format itself is [corpus-format.md](corpus-format.md).
 | Core neutrality | `repo-checks.py --only neutrality`; review |
 | Immutability | builder refuses to write a source path; tests |
 | Digest integrity | verifier; tests |
-| Deterministic build | `verify --rebuild`; the sample-corpus gate step builds twice and compares bytes |
+| Deterministic build | `verify --rebuild`; `tools/sample-corpus/check.sh` (a gate step) builds each sample twice from its sources and compares the outputs and packed archives byte for byte |
 | Declared derivation | manifest validation: every derived artifact has exactly one derivation |
 | Address integrity | manifest validation: unique segment ids, spans in bounds |
 | Mapping integrity | manifest validation: source spans resolve and are in range |
-| Offline verification | `repo-checks.py --only determinism` bans network, clock, environment and randomness in `src/` |
+| Offline verification | `repo-checks.py --only determinism` bans network, clock, environment and randomness in the core and the text adapter, and the network in the CLI |
 | Public API discipline | PublicApiAnalyzers baselines |
-| Documentation truth | `repo-checks.py --only doc-references`; the sample corpus is the README's example |
+| Documentation truth | `repo-checks.py --only doc-references`; the committed `samples/` are the README's example, and `tools/sample-corpus/check.sh` fails if they differ from what the CLI builds |

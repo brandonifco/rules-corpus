@@ -1,2 +1,1 @@
-// Placeholder until M3 lands the commands.
-return 2;
+return RulesCorpus.Cli.Cli.Run(args, Console.Out, Console.Error);

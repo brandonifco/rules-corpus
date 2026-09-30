@@ -1,0 +1,69 @@
+{
+  "baselines": [
+    {
+      "artifact": "srd-text",
+      "hashDerivation": "srd-5.2.1-pdftotext-24.02.0-page-marked-excerpt-190-193",
+      "sourceId": "srd-5.2.1-excerpt"
+    }
+  ],
+  "corpusId": "srd-5.2.1-excerpt",
+  "derivations": [
+    {
+      "adapter": "text",
+      "id": "srd-blocks",
+      "input": "srd-text",
+      "output": {
+        "id": "srd-canonical",
+        "path": "canonical/srd-5.2.1-excerpt.txt"
+      },
+      "parameters": {
+        "pageMarker": "^\\{([0-9]+)\\}$",
+        "segmentation": "blocks"
+      }
+    }
+  ],
+  "external": [
+    {
+      "fidelity": "lossy-traceable",
+      "id": "srd-extraction",
+      "inputs": [
+        "srd-pdf"
+      ],
+      "losses": [
+        "an excerpt: only the last block of page 190, pages 191 and 192, and the start of page 193 are kept; the rest of the document, including the {190} marker line, is discarded",
+        "layout: columns and sidebars are linearised in pdftotext's reading order",
+        "tables are flattened to one cell per line",
+        "words hyphenated across a line break are joined",
+        "fonts, styles, images and links",
+        "page boundaries: the form feed between pages is replaced by the {N} marker line"
+      ],
+      "output": "srd-text",
+      "parameters": {
+        "command": "pdftotext -enc UTF-8 SRD_CC_v5.2.1.pdf -",
+        "pageMarker": "the line {N} is written before the text of physical page N"
+      },
+      "tool": {
+        "id": "pdftotext",
+        "version": "24.02.0"
+      }
+    }
+  ],
+  "schema": "rules-corpus/build/1",
+  "sources": [
+    {
+      "bytes": 6031375,
+      "digest": "sha256:8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+      "id": "srd-pdf",
+      "mediaType": "application/pdf",
+      "notes": "System Reference Document 5.2.1, the English PDF on the official SRD page. Not stored in this corpus: its bytes are retained in rules-factory (examples/srd-52-combat/SRD_CC_v5.2.1.pdf) and only their length and digest are declared here, so verify reports it not verified. Licensed CC-BY-4.0. This work includes material from the System Reference Document 5.2.1 (“SRD 5.2.1”) by Wizards of the Coast LLC, available at https://www.dndbeyond.com/srd. The SRD 5.2.1 is licensed under the Creative Commons Attribution 4.0 International License, available at https://creativecommons.org/licenses/by/4.0/legalcode.",
+      "origin": "https://media.dndbeyond.com/compendium-images/srd/5.2/SRD_CC_v5.2.1.pdf",
+      "retrieved": "2026-09-14",
+      "stored": false
+    },
+    {
+      "id": "srd-text",
+      "mediaType": "text/plain",
+      "path": "sources/srd-5.2.1-excerpt.txt"
+    }
+  ]
+}

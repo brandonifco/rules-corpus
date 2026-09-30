@@ -22,4 +22,9 @@
     <Using Include="Xunit" />
   </ItemGroup>
 
+  <!-- The committed sample corpora, the same bytes tools/sample-corpus/check.sh checks. -->
+  <ItemGroup>
+    <None Include="../../samples/**" Exclude="../../samples/**/README.md" LinkBase="samples" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>
