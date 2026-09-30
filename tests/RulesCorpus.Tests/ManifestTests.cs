@@ -399,7 +399,7 @@ public class PathCollisionScaleTests
     [Fact]
     public void A_manifest_with_many_artifacts_validates_in_linear_time_and_still_finds_a_collision()
     {
-        var json = new StringBuilder("{\"schema\":\"rules-corpus/manifest/1\",\"corpusId\":\"x\",\"artifacts\":[");
+        var json = new StringBuilder($"{{\"schema\":\"rules-corpus/manifest/1\",\"corpusId\":\"x\",\"buildDigest\":\"{Zero}\",\"artifacts\":[");
         for (int i = 0; i < Count; i++)
         {
             // The last path differs from the first only by case.

@@ -101,6 +101,7 @@ RulesCorpus.CorpusLimits.MaxSegments.init -> void
 RulesCorpus.CorpusManifest
 RulesCorpus.CorpusManifest.Artifacts.get -> System.Collections.Generic.IReadOnlyList<RulesCorpus.ManifestArtifact!>!
 RulesCorpus.CorpusManifest.Baselines.get -> System.Collections.Generic.IReadOnlyList<RulesCorpus.ManifestBaseline!>!
+RulesCorpus.CorpusManifest.BuildDigest.get -> RulesCorpus.ContentDigest!
 RulesCorpus.CorpusManifest.ContentDigest.get -> RulesCorpus.ContentDigest!
 RulesCorpus.CorpusManifest.CorpusId.get -> string!
 RulesCorpus.CorpusManifest.Derivations.get -> System.Collections.Generic.IReadOnlyList<RulesCorpus.ManifestDerivation!>!

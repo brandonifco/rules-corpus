@@ -18,6 +18,132 @@ internal sealed class BuildDefinition
 
     public required List<ManifestBaseline> Baselines { get; init; }
 
+    // Which external derivation, if any, produced each source; built on first use.
+    private Dictionary<string, string>? _externalOutputs;
+
+    /// <summary>The artifact record a source becomes, given its measured (or, unstored, declared) length and digest.</summary>
+    public ManifestArtifact SourceArtifact(BuildSource s, long length, ContentDigest digest)
+    {
+        if (_externalOutputs is null)
+        {
+            _externalOutputs = new Dictionary<string, string>(StringComparer.Ordinal);
+            foreach (BuildExternal e in External)
+            {
+                _externalOutputs.TryAdd(e.Output, e.Id);
+            }
+        }
+
+        string? derivedBy = _externalOutputs.GetValueOrDefault(s.Id);
+        return new ManifestArtifact(
+            s.Id,
+            derivedBy is null ? ArtifactRole.Source : ArtifactRole.Derived,
+            s.MediaType,
+            length,
+            digest,
+            s.Stored,
+            s.Path,
+            derivedBy is null ? new ArtifactAcquisition(s.Origin!, s.Retrieved, s.Notes) : null,
+            derivedBy);
+    }
+
+    /// <summary>The artifact record an adapter derivation's output becomes.</summary>
+    public static ManifestArtifact AdapterOutput(BuildDerivation d, string mediaType, long length, ContentDigest digest) =>
+        new(d.OutputId, ArtifactRole.Derived, mediaType, length, digest, stored: true, d.OutputPath, acquisition: null, derivedBy: d.Id);
+
+    /// <summary>The derivation record an adapter run becomes; version, fidelity and losses are the adapter's.</summary>
+    public static ManifestDerivation AdapterDerivation(BuildDerivation d, string adapterVersion, DerivationFidelity fidelity, IReadOnlyList<string> losses) =>
+        new(d.Id, [d.Input], d.OutputId, new DerivationTool(d.Adapter, adapterVersion), d.Parameters, DerivationReproducibility.Reproducible, fidelity, losses);
+
+    /// <summary>The derivation record an external derivation becomes: copied as declared.</summary>
+    public static ManifestDerivation ExternalDerivation(BuildExternal e) =>
+        new(e.Id, e.Inputs, e.Output, e.Tool, e.Parameters, DerivationReproducibility.External, e.Fidelity, e.Losses);
+
+    /// <summary>
+    /// Every way the manifest's records differ from what building this definition records
+    /// (decision 0007): the same corpus id, sources, external derivations, adapter derivations
+    /// and baselines, in the same order. What the definition does not declare (a stored file's
+    /// bytes and digest, an adapter's version, media type, fidelity and losses) is taken from
+    /// the manifest here; verification checks those against the files and, with a rebuild,
+    /// against the adapter.
+    /// </summary>
+    public List<CorpusError> Disagreements(CorpusManifest m)
+    {
+        var errors = new List<CorpusError>();
+        if (!string.Equals(CorpusId, m.CorpusId, StringComparison.Ordinal))
+        {
+            errors.Add(new CorpusError("$.corpusId", $"'{CorpusId}' differs from the manifest's '{m.CorpusId}'"));
+        }
+
+        if (m.Artifacts.Count != Sources.Count + Derivations.Count)
+        {
+            errors.Add(new CorpusError("$", $"declares {Sources.Count} source(s) and {Derivations.Count} adapter output(s); the manifest records {m.Artifacts.Count} artifact(s)"));
+        }
+
+        if (m.Derivations.Count != External.Count + Derivations.Count)
+        {
+            errors.Add(new CorpusError("$", $"declares {External.Count} external and {Derivations.Count} adapter derivation(s); the manifest records {m.Derivations.Count} derivation(s)"));
+        }
+
+        if (m.Baselines.Count != Baselines.Count)
+        {
+            errors.Add(new CorpusError("$.baselines", $"declares {Baselines.Count} baseline(s); the manifest records {m.Baselines.Count}"));
+        }
+
+        for (int i = 0; i < Sources.Count && i < m.Artifacts.Count; i++)
+        {
+            BuildSource s = Sources[i];
+            ManifestArtifact recorded = m.Artifacts[i];
+            ManifestArtifact expected = s.Stored
+                ? SourceArtifact(s, recorded.Bytes, recorded.Digest)
+                : SourceArtifact(s, s.Bytes!.Value, s.Digest!);
+            Compare($"$.sources[{i}]", ManifestJson.ToJson(expected), $"$.artifacts[{i}]", ManifestJson.ToJson(recorded), errors);
+        }
+
+        for (int i = 0; i < External.Count && i < m.Derivations.Count; i++)
+        {
+            Compare($"$.external[{i}]", ManifestJson.ToJson(ExternalDerivation(External[i])), $"$.derivations[{i}]", ManifestJson.ToJson(m.Derivations[i]), errors);
+        }
+
+        for (int i = 0; i < Derivations.Count; i++)
+        {
+            BuildDerivation d = Derivations[i];
+            int ai = Sources.Count + i;
+            if (ai < m.Artifacts.Count)
+            {
+                ManifestArtifact recorded = m.Artifacts[ai];
+                ManifestArtifact expected = AdapterOutput(d, recorded.MediaType, recorded.Bytes, recorded.Digest);
+                Compare($"$.derivations[{i}].output", ManifestJson.ToJson(expected), $"$.artifacts[{ai}]", ManifestJson.ToJson(recorded), errors);
+            }
+
+            int di = External.Count + i;
+            if (di < m.Derivations.Count)
+            {
+                ManifestDerivation recorded = m.Derivations[di];
+                ManifestDerivation expected = AdapterDerivation(d, recorded.Tool.Version, recorded.Fidelity, recorded.Losses);
+                Compare($"$.derivations[{i}]", ManifestJson.ToJson(expected), $"$.derivations[{di}]", ManifestJson.ToJson(recorded), errors);
+            }
+        }
+
+        for (int i = 0; i < Baselines.Count && i < m.Baselines.Count; i++)
+        {
+            Compare($"$.baselines[{i}]", ManifestJson.ToJson(Baselines[i]), $"$.baselines[{i}]", ManifestJson.ToJson(m.Baselines[i]), errors);
+        }
+
+        return errors;
+    }
+
+    private static void Compare(string at, CjObject declared, string manifestAt, CjObject recorded, List<CorpusError> errors)
+    {
+        byte[] expected = CanonicalJsonWriter.ToCompact(declared);
+        byte[] actual = CanonicalJsonWriter.ToCompact(recorded);
+        if (!expected.AsSpan().SequenceEqual(actual))
+        {
+            errors.Add(new CorpusError(at, $"builds {Utf8(expected)}, but the manifest's {manifestAt} records {Utf8(actual)}"));
+        }
+    }
+
+    private static string Utf8(byte[] bytes) => System.Text.Encoding.UTF8.GetString(bytes);
+
     /// <summary>Reads and cross-checks a build definition, or returns null having appended every error.</summary>
     public static BuildDefinition? Read(ReadOnlySpan<byte> utf8, List<CorpusError> errors)
     {

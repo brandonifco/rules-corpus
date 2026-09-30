@@ -18,6 +18,7 @@ internal static class ManifestJson
         var top = new JsonMembers(root, "$", errors);
         top.Constant("schema", Vocabulary.ManifestSchema);
         string? corpusId = top.Id("corpusId", required: true, "corpus id");
+        ContentDigest? buildDigest = top.Digest("buildDigest", required: true);
         List<ManifestArtifact>? artifacts = ReadList(top, "artifacts", allowEmpty: false, errors, ReadArtifact);
         List<ManifestDerivation>? derivations = ReadList(top, "derivations", allowEmpty: true, errors, ReadDerivation);
         List<ManifestBaseline>? baselines = ReadList(top, "baselines", allowEmpty: true, errors, ReadBaseline);
@@ -32,12 +33,13 @@ internal static class ManifestJson
         }
 
         return new CorpusManifest(
-            corpusId!, artifacts!, derivations!, baselines!, segments!, contentDigest!, manifestDigest!);
+            corpusId!, buildDigest!, artifacts!, derivations!, baselines!, segments!, contentDigest!, manifestDigest!);
     }
 
     /// <summary>The manifest as a canonical value, with or without its own digest member.</summary>
     public static CjObject ToJson(
         string corpusId,
+        ContentDigest buildDigest,
         IReadOnlyList<ManifestArtifact> artifacts,
         IReadOnlyList<ManifestDerivation> derivations,
         IReadOnlyList<ManifestBaseline> baselines,
@@ -48,6 +50,7 @@ internal static class ManifestJson
         return new CjObject()
             .Add("schema", CjValue.Of(Vocabulary.ManifestSchema))
             .Add("corpusId", CjValue.Of(corpusId))
+            .Add("buildDigest", CjValue.Of(buildDigest.ToString()))
             .Add("artifacts", new CjArray(artifacts.Select(ToJson)))
             .Add("derivations", new CjArray(derivations.Select(ToJson)))
             .Add("baselines", new CjArray(baselines.Select(ToJson)))
@@ -57,7 +60,7 @@ internal static class ManifestJson
     }
 
     public static CjObject ToJson(CorpusManifest m, bool includeManifestDigest) =>
-        ToJson(m.CorpusId, m.Artifacts, m.Derivations, m.Baselines, m.Segments, m.ContentDigest, includeManifestDigest ? m.ManifestDigest : null);
+        ToJson(m.CorpusId, m.BuildDigest, m.Artifacts, m.Derivations, m.Baselines, m.Segments, m.ContentDigest, includeManifestDigest ? m.ManifestDigest : null);
 
     public static CjObject ToJson(ManifestArtifact a)
     {

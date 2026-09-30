@@ -57,8 +57,7 @@ public static class CorpusBuilder
         var derivations = new List<ManifestDerivation>();
         foreach (BuildExternal e in definition!.External)
         {
-            derivations.Add(new ManifestDerivation(
-                e.Id, e.Inputs, e.Output, e.Tool, e.Parameters, DerivationReproducibility.External, e.Fidelity, e.Losses));
+            derivations.Add(BuildDefinition.ExternalDerivation(e));
         }
 
         var segments = new List<ManifestSegment>();
@@ -81,25 +80,8 @@ public static class CorpusBuilder
                 break;
             }
 
-            artifacts.Add(new ManifestArtifact(
-                d.OutputId,
-                ArtifactRole.Derived,
-                result.MediaType,
-                result.Canonical.LongLength,
-                ContentDigest.Compute(result.Canonical),
-                stored: true,
-                d.OutputPath,
-                acquisition: null,
-                derivedBy: d.Id));
-            derivations.Add(new ManifestDerivation(
-                d.Id,
-                [d.Input],
-                d.OutputId,
-                new DerivationTool(adapter.Id, adapter.Version),
-                d.Parameters,
-                DerivationReproducibility.Reproducible,
-                result.Fidelity,
-                result.Losses));
+            artifacts.Add(BuildDefinition.AdapterOutput(d, result.MediaType, result.Canonical.LongLength, ContentDigest.Compute(result.Canonical)));
+            derivations.Add(BuildDefinition.AdapterDerivation(d, adapter.Version, result.Fidelity, result.Losses));
             foreach (ManifestSegment s in result.Segments)
             {
                 segments.Add(s);
@@ -112,7 +94,8 @@ public static class CorpusBuilder
 
         Refuse("A derivation failed.", errors);
 
-        CorpusManifest manifest = Compose(definition.CorpusId, artifacts, derivations, definition.Baselines, segments);
+        CorpusManifest manifest = Compose(
+            definition.CorpusId, ContentDigest.Compute(definitionBytes), artifacts, derivations, definition.Baselines, segments);
         byte[] manifestBytes = manifest.ToUtf8Json();
 
         // The manifest this build is about to write passes the same validation a reader applies.
@@ -148,6 +131,7 @@ public static class CorpusBuilder
     /// <summary>Computes both identities and assembles the manifest.</summary>
     internal static CorpusManifest Compose(
         string corpusId,
+        ContentDigest buildDigest,
         List<ManifestArtifact> artifacts,
         List<ManifestDerivation> derivations,
         List<ManifestBaseline> baselines,
@@ -155,9 +139,9 @@ public static class CorpusBuilder
     {
         ContentDigest contentDigest = ManifestJson.ComputeContentDigest(baselines, artifacts, segments)
             ?? throw new CorpusException("A baseline names an artifact that is not declared.");
-        CjObject withoutDigest = ManifestJson.ToJson(corpusId, artifacts, derivations, baselines, segments, contentDigest, manifestDigest: null);
+        CjObject withoutDigest = ManifestJson.ToJson(corpusId, buildDigest, artifacts, derivations, baselines, segments, contentDigest, manifestDigest: null);
         ContentDigest manifestDigest = ManifestJson.ComputeManifestDigest(withoutDigest);
-        return new CorpusManifest(corpusId, artifacts, derivations, baselines, segments, contentDigest, manifestDigest);
+        return new CorpusManifest(corpusId, buildDigest, artifacts, derivations, baselines, segments, contentDigest, manifestDigest);
     }
 
     private static Dictionary<string, ICorpusAdapter> IndexAdapters(IEnumerable<ICorpusAdapter> adapters, List<CorpusError> errors)
@@ -182,7 +166,6 @@ public static class CorpusBuilder
     private static (List<ManifestArtifact> Artifacts, Dictionary<string, byte[]> Bytes) Fingerprint(
         BuildDefinition definition, DirectoryCorpusFiles files, CorpusLimits limits, List<CorpusError> errors)
     {
-        var externalOutputs = definition.External.ToDictionary(e => e.Output, e => e.Id, StringComparer.Ordinal);
         var artifacts = new List<ManifestArtifact>();
         var bytesById = new Dictionary<string, byte[]>(StringComparer.Ordinal);
         for (int i = 0; i < definition.Sources.Count; i++)
@@ -212,17 +195,7 @@ public static class CorpusBuilder
                 }
             }
 
-            bool external = externalOutputs.TryGetValue(s.Id, out string? derivedBy);
-            artifacts.Add(new ManifestArtifact(
-                s.Id,
-                external ? ArtifactRole.Derived : ArtifactRole.Source,
-                s.MediaType,
-                length,
-                digest,
-                s.Stored,
-                s.Path,
-                external ? null : new ArtifactAcquisition(s.Origin!, s.Retrieved, s.Notes),
-                derivedBy));
+            artifacts.Add(definition.SourceArtifact(s, length, digest));
         }
 
         return (artifacts, bytesById);

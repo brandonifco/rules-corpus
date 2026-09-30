@@ -18,7 +18,18 @@ internal static class ManifestEdits
         var errors = new List<CorpusError>();
         (CorpusManifest? m, _) = CorpusManifest.ReadSchema(manifest, errors);
         Assert.Empty(errors);
-        return CorpusBuilder.Compose(m!.CorpusId, [.. m.Artifacts], [.. m.Derivations], [.. m.Baselines], [.. m.Segments]).ToUtf8Json();
+        return CorpusBuilder.Compose(m!.CorpusId, m.BuildDigest, [.. m.Artifacts], [.. m.Derivations], [.. m.Baselines], [.. m.Segments]).ToUtf8Json();
+    }
+
+    /// <summary>
+    /// Points the corpus's manifest at the build definition now on disk (its buildDigest) and
+    /// reseals it, so only a disagreement between the two remains.
+    /// </summary>
+    public static void BindToCurrentBuild(TempCorpus corpus)
+    {
+        JsonObject manifest = Read(corpus);
+        manifest["buildDigest"] = ContentDigest.Compute(corpus.ReadBytes("corpus.build.json")).ToString();
+        corpus.WriteBytes("corpus.json", Reseal(Bytes(manifest)));
     }
 
     public static CorpusException ParseFails(byte[] manifest) =>

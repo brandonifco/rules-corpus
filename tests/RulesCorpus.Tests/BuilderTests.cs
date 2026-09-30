@@ -108,6 +108,7 @@ public class BuilderDeterminismTests
                 }
               ],
               "baselines": [],
+              "buildDigest": "{{ContentDigest.Compute(corpus.ReadBytes("corpus.build.json"))}}",
               "contentDigest": "{{m.ContentDigest}}",
               "corpusId": "tiny",
               "derivations": [
