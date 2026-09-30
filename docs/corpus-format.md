@@ -227,9 +227,14 @@ Where the rules above leave room, readers and the builder take the strict readin
 - A segment's `sources`, when present, is non-empty; an empty array would be a second
   canonical form of the same manifest.
 - Media types follow RFC 6838 restricted names, without parameters.
-- Artifact paths also refuse `\`, `:` and control characters, are at most 1024 characters
-  with at most 255 bytes per component, may not collide ignoring case, may not contain one
-  another, and may not pass through a symbolic link.
+- Artifact path components use only ASCII letters, digits, `.`, `_` and `-`; do not end in
+  `.`; and are not a Windows device name (`con`, `prn`, `aux`, `nul`, `com0`–`com9`,
+  `lpt0`–`lpt9`, in any case, with or without an extension: `nul.txt` is refused). Anything
+  wider aliases on some system: Windows and macOS fold case, macOS normalizes Unicode (which
+  this library cannot compare, [decision 0003](decisions/0003-no-unicode-normalization-in-text-v1.md)),
+  and Windows drops a trailing `.`. Paths are at most 1024 characters with at most 255 per
+  component, may not collide ignoring case, may not contain one another, and may not pass
+  through a symbolic link.
 - Segments are grouped in derivation order, with non-decreasing `start` within an artifact.
   A segment's bytes are well-formed UTF-8.
 - A reproducible derivation has exactly one input, and that input is stored.
