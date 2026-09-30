@@ -1,0 +1,16 @@
+{
+  "version": 2,
+  "dependencies": {
+    "net10.0": {
+      "rulescorpus": {
+        "type": "Project"
+      },
+      "rulescorpus.adapters.text": {
+        "type": "Project",
+        "dependencies": {
+          "RulesCorpus": "[0.1.0-dev, )"
+        }
+      }
+    }
+  }
+}

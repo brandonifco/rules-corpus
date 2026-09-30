@@ -1,0 +1,41 @@
+{
+  "consumers": [
+    {
+      "buildDefinition": "tools/calibration/faa-part-107.corpus.build.json",
+      "commit": "b8fbb6b27025300c58e43eaaaca8ad2f75753e56",
+      "corpusArtifact": "cfr-14-107-xml",
+      "corpusPath": "corpus/part107.xml",
+      "expected": {
+        "asOf": "2026-01-01",
+        "contentHash": "80f6bc4b002df9dcc60a651fec30a2dc3590081cc3e5fd431d9885c69b7ce35e",
+        "hashDerivation": "ecfr-versioner-xml",
+        "sourceId": "cfr-14-107"
+      },
+      "name": "faa-part-107",
+      "pinned": "2026-09-30",
+      "provenancePath": "provenance.json",
+      "repository": "https://github.com/brandonifco/faa-part-107",
+      "segments": 0,
+      "verifyRebuildExit": 0
+    },
+    {
+      "buildDefinition": "tools/calibration/srd-52-combat.corpus.build.json",
+      "commit": "59904e2af7f80887390098a987764727a14e8c77",
+      "corpusArtifact": "srd-text",
+      "corpusPath": "corpus/srd-5.2.1.txt",
+      "expected": {
+        "asOf": null,
+        "contentHash": "c55926cb77bc7ea09096fc652db1411d763eae89d430c52221ed8709a075b100",
+        "hashDerivation": "srd-5.2.1-pdftotext-24.02.0-page-marked",
+        "sourceId": "srd-5.2.1"
+      },
+      "name": "srd-52-combat",
+      "pinned": "2026-09-30",
+      "provenancePath": "provenance.json",
+      "repository": "https://github.com/brandonifco/srd-52-combat",
+      "segments": null,
+      "verifyRebuildExit": 3
+    }
+  ],
+  "schema": "rules-corpus/calibration-consumers/1"
+}

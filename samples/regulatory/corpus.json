@@ -1,0 +1,137 @@
+{
+  "artifacts": [
+    {
+      "acquisition": {
+        "notes": "A plain-text rendering of the part heading and 14 CFR 107.1, 107.2, 107.9, 107.11 and 107.12, taken from the eCFR XML of 14 CFR part 107 as of 2026-01-01 served at the origin. Each section heading, paragraph and citation is one line; inline whitespace is collapsed and sections are separated by a blank line; nothing else is changed. A work of the United States Government, in the public domain. No retrieval date is recorded because none was kept when the excerpt was made.",
+        "origin": "https://www.ecfr.gov/api/versioner/v1/full/2026-01-01/title-14.xml?part=107"
+      },
+      "bytes": 3313,
+      "digest": "sha256:b998fc802730ce53ae2bc7f2cd8f63ae20d6bab0fabc2a64d993464d9bab32af",
+      "id": "cfr-14-107-text",
+      "mediaType": "text/plain",
+      "path": "sources/14-cfr-107-excerpt.txt",
+      "role": "source",
+      "stored": true
+    },
+    {
+      "bytes": 3313,
+      "derivedBy": "cfr-14-107-sections",
+      "digest": "sha256:b998fc802730ce53ae2bc7f2cd8f63ae20d6bab0fabc2a64d993464d9bab32af",
+      "id": "cfr-14-107-canonical",
+      "mediaType": "text/plain",
+      "path": "canonical/14-cfr-107-excerpt.txt",
+      "role": "derived",
+      "stored": true
+    }
+  ],
+  "baselines": [
+    {
+      "artifact": "cfr-14-107-text",
+      "asOf": "2026-01-01",
+      "hashDerivation": "ecfr-versioner-xml-plain-text-excerpt-107.1-107.12",
+      "sourceId": "cfr-14-107-excerpt"
+    }
+  ],
+  "buildDigest": "sha256:5f87cd26a25b2ce2fec3b429c7e0cc22e166441fa23439266730f54609662a98",
+  "contentDigest": "sha256:bf0f6e41b6cf7a3a7e1de818469fde25746159bc99905bd749fe4333ac1fa07e",
+  "corpusId": "cfr-14-107-excerpt",
+  "derivations": [
+    {
+      "fidelity": "lossless",
+      "id": "cfr-14-107-sections",
+      "inputs": [
+        "cfr-14-107-text"
+      ],
+      "losses": [],
+      "output": "cfr-14-107-canonical",
+      "parameters": {
+        "headingPattern": "^§ (?<id>107\\.[0-9]+)",
+        "segmentation": "headings"
+      },
+      "reproducibility": "reproducible",
+      "tool": {
+        "id": "text",
+        "version": "1"
+      }
+    }
+  ],
+  "manifestDigest": "sha256:fb8d63dc130d83e82bf36243b4623341adb35f68dfe1a6bbcfdc85397ab74666",
+  "schema": "rules-corpus/manifest/1",
+  "segments": [
+    {
+      "artifact": "cfr-14-107-canonical",
+      "digest": "sha256:617083f21eb91b4416085ef5cd0c5af0a09464d46836d4c426072e466656ed85",
+      "id": "107.1",
+      "length": 905,
+      "locator": "§ 107.1 Applicability.",
+      "sources": [
+        {
+          "artifact": "cfr-14-107-text",
+          "length": 905,
+          "start": 44
+        }
+      ],
+      "start": 44
+    },
+    {
+      "artifact": "cfr-14-107-canonical",
+      "digest": "sha256:8efb0250d2edac4a2dfb3f6197a107a91cd6ce566c429c8d2098749928563599",
+      "id": "107.2",
+      "length": 337,
+      "locator": "§ 107.2 Applicability of certification procedures for products and articles.",
+      "sources": [
+        {
+          "artifact": "cfr-14-107-text",
+          "length": 337,
+          "start": 951
+        }
+      ],
+      "start": 951
+    },
+    {
+      "artifact": "cfr-14-107-canonical",
+      "digest": "sha256:fc92f3a277114b564a493fad4522a0950b15d0680c6bf356d189f740ec22f1ad",
+      "id": "107.9",
+      "length": 812,
+      "locator": "§ 107.9 Safety event reporting.",
+      "sources": [
+        {
+          "artifact": "cfr-14-107-text",
+          "length": 812,
+          "start": 1290
+        }
+      ],
+      "start": 1290
+    },
+    {
+      "artifact": "cfr-14-107-canonical",
+      "digest": "sha256:bf7b9c9d311c67868d44ab634ecc21bc23601be352d724451a5d4b74d3f26a03",
+      "id": "107.11",
+      "length": 129,
+      "locator": "§ 107.11 Applicability.",
+      "sources": [
+        {
+          "artifact": "cfr-14-107-text",
+          "length": 129,
+          "start": 2104
+        }
+      ],
+      "start": 2104
+    },
+    {
+      "artifact": "cfr-14-107-canonical",
+      "digest": "sha256:8142e346fc741980f5f1243f94691e42b92eef426855d41c0af199886f38e411",
+      "id": "107.12",
+      "length": 1077,
+      "locator": "§ 107.12 Requirement for a remote pilot certificate with a small UAS rating.",
+      "sources": [
+        {
+          "artifact": "cfr-14-107-text",
+          "length": 1077,
+          "start": 2235
+        }
+      ],
+      "start": 2235
+    }
+  ]
+}

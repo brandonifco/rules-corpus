@@ -1,0 +1,43 @@
+<Project>
+
+  <!-- Repo-wide defaults. rules-corpus produces evidence that engines cite: a build that
+       resolves or compiles differently from one machine to the next would undermine the
+       one claim this repository exists to make. See docs/architecture.md. -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <WarningsAsErrors />
+    <AnalysisLevel>latest</AnalysisLevel>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <Deterministic>true</Deterministic>
+    <ContinuousIntegrationBuild Condition="'$(CI)' == 'true'">true</ContinuousIntegrationBuild>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <NoWarn />
+    <!-- Restore from the committed packages.lock.json files. Regenerate deliberately with
+         `dotnet restore RulesCorpus.slnx` with force-evaluate. -->
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+  </PropertyGroup>
+
+  <!-- Packaging defaults. main is never a release version: VersionPrefix names the NEXT
+       release and the dev suffix says this tree is not it (the rules-kernel release cycle,
+       adopted from the start rather than learned again). -->
+  <PropertyGroup>
+    <Authors>Brandon</Authors>
+    <Product>Rules Corpus</Product>
+    <RepositoryUrl>https://github.com/brandonifco/rules-corpus</RepositoryUrl>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <VersionPrefix>0.1.0</VersionPrefix>
+    <VersionSuffix>dev</VersionSuffix>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageProjectUrl>https://github.com/brandonifco/rules-corpus</PackageProjectUrl>
+    <PackageTags>rules-engine;corpus;provenance;determinism</PackageTags>
+    <RepositoryType>git</RepositoryType>
+  </PropertyGroup>
+
+</Project>

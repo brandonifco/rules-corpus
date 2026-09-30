@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- The rules-corpus command. It is also the path CI uses, so local and automated
+       verification run the same code. -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>RulesCorpus.Cli</RootNamespace>
+    <AssemblyName>rules-corpus</AssemblyName>
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>rules-corpus</ToolCommandName>
+    <PackageId>RulesCorpus.Cli</PackageId>
+    <Description>Build, verify, inspect, diff, and pack rules corpora.</Description>
+    <!-- An executable has no public surface to document. -->
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <!-- Commands are exercised in-process through Cli.Run. -->
+  <ItemGroup>
+    <InternalsVisibleTo Include="RulesCorpus.Cli.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../RulesCorpus/RulesCorpus.csproj" />
+    <ProjectReference Include="../RulesCorpus.Adapters.Text/RulesCorpus.Adapters.Text.csproj" />
+  </ItemGroup>
+
+</Project>

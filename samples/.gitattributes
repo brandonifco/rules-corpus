@@ -1,0 +1,3 @@
+# The samples are evidence: check.sh compares their exact bytes with what the CLI builds, so
+# git must never rewrite them.
+* -text

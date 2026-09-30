@@ -1,0 +1,59 @@
+name: build-and-test
+
+# This repository has exactly one definition of "acceptable": ./scripts/validate.sh full.
+# This workflow calls it and does nothing else of substance. Reimplementing the recipe here
+# would create a second definition that drifts from the first.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: build-and-test-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    # A fixed release, not the ubuntu-latest alias: that alias has jumped Ubuntu releases
+    # before, and each jump silently changes the toolchain underneath a build whose central
+    # claim is reproducibility.
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # validate.sh full then runs repo-controlled shell, Python (tools/repo-checks.py)
+          # and MSBuild targets/test code from this checkout. None of that needs to push,
+          # tag, or otherwise write to the remote, so there is no reason for a credential
+          # capable of doing so to sit in .git/config while it runs. This does not shrink
+          # `permissions: contents: read` above -- it removes the *token material itself*
+          # from the working tree, which matters against repo-controlled code specifically,
+          # not against the GitHub API.
+          persist-credentials: false
+
+      # tools/repo-checks.py's `parseable` check verifies every YAML file parses; a malformed
+      # workflow simply does not run on GitHub, so this is what notices CI ceasing to exist.
+      - name: Ensure PyYAML is available to the repository checks
+        run: python3 -m pip install --quiet --disable-pip-version-check --require-hashes -r tools/requirements.txt
+
+      - name: Read the pinned SDK version
+        id: sdk
+        run: echo "version=$(python3 -c 'import json;print(json.load(open("global.json"))["sdk"]["version"])')" >> "$GITHUB_OUTPUT"
+
+      # RulesCorpus multi-targets net8.0 so net8.0 engines can reference it; the tests run
+      # on net10.0 only, so the pinned SDK is all this job needs.
+      - name: Set up .NET
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          dotnet-version: ${{ steps.sdk.outputs.version }}
+
+      - name: Validate
+        env:
+          CI: "true"
+        run: ./scripts/validate.sh full

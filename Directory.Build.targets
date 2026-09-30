@@ -1,0 +1,12 @@
+<Project>
+
+  <!-- A multi-targeted project restored with a single TargetFramework must not overwrite its
+       packages.lock.json. Dependabot's NuGet discovery restores referenced projects one
+       framework at a time, which rewrote rules-kernel's lock files without net8.0; the same
+       projects here are multi-targeted the same way. In that context the lock file goes to
+       obj/, where nothing reads it, and the full restore updates the real one. -->
+  <PropertyGroup Condition="'$(TargetFrameworks)' != '' and '$(TargetFramework)' != ''">
+    <NuGetLockFilePath>$(MSBuildProjectExtensionsPath)single-framework.packages.lock.json</NuGetLockFilePath>
+  </PropertyGroup>
+
+</Project>

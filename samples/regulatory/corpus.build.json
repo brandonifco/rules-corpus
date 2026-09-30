@@ -1,0 +1,37 @@
+{
+  "baselines": [
+    {
+      "artifact": "cfr-14-107-text",
+      "asOf": "2026-01-01",
+      "hashDerivation": "ecfr-versioner-xml-plain-text-excerpt-107.1-107.12",
+      "sourceId": "cfr-14-107-excerpt"
+    }
+  ],
+  "corpusId": "cfr-14-107-excerpt",
+  "derivations": [
+    {
+      "adapter": "text",
+      "id": "cfr-14-107-sections",
+      "input": "cfr-14-107-text",
+      "output": {
+        "id": "cfr-14-107-canonical",
+        "path": "canonical/14-cfr-107-excerpt.txt"
+      },
+      "parameters": {
+        "headingPattern": "^§ (?<id>107\\.[0-9]+)",
+        "segmentation": "headings"
+      }
+    }
+  ],
+  "external": [],
+  "schema": "rules-corpus/build/1",
+  "sources": [
+    {
+      "id": "cfr-14-107-text",
+      "mediaType": "text/plain",
+      "notes": "A plain-text rendering of the part heading and 14 CFR 107.1, 107.2, 107.9, 107.11 and 107.12, taken from the eCFR XML of 14 CFR part 107 as of 2026-01-01 served at the origin. Each section heading, paragraph and citation is one line; inline whitespace is collapsed and sections are separated by a blank line; nothing else is changed. A work of the United States Government, in the public domain. No retrieval date is recorded because none was kept when the excerpt was made.",
+      "origin": "https://www.ecfr.gov/api/versioner/v1/full/2026-01-01/title-14.xml?part=107",
+      "path": "sources/14-cfr-107-excerpt.txt"
+    }
+  ]
+}
