@@ -164,14 +164,12 @@ internal sealed class BuildDefinition
             paths.Add((Derivations[i].OutputPath, $"$.derivations[{i}].output.path"));
         }
 
-        for (int i = 0; i < paths.Count; i++)
+        var collisions = new PathCollisions();
+        foreach ((string path, string where) in paths)
         {
-            for (int j = 0; j < i; j++)
+            if (collisions.Add(path, where) is { } collision)
             {
-                if (CorpusPaths.Collide(paths[i].Path, paths[j].Path))
-                {
-                    errors.Add(new CorpusError(paths[i].Where, $"'{paths[i].Path}' collides with {paths[j].Where} '{paths[j].Path}' (the same file, ignoring case, or one inside the other); build never writes to a source path"));
-                }
+                errors.Add(new CorpusError(where, $"'{path}' {collision}; build never writes to a source path"));
             }
         }
 
@@ -180,7 +178,7 @@ internal sealed class BuildDefinition
         for (int i = 0; i < Baselines.Count; i++)
         {
             ManifestBaseline b = Baselines[i];
-            if (!sourceIndex.ContainsKey(b.Artifact) && !Derivations.Any(d => d.OutputId == b.Artifact))
+            if (!sourceIndex.ContainsKey(b.Artifact) && !available.Contains(b.Artifact))
             {
                 errors.Add(new CorpusError($"$.baselines[{i}].artifact", $"names artifact '{b.Artifact}', which is not declared"));
             }

@@ -110,16 +110,53 @@ internal static class CorpusPaths
     private static string Describe(char c) =>
         c is > ' ' and < '\x7F' ? $"'{c}'" : $"U+{(int)c:X4}";
 
-    /// <summary>
-    /// True when the two paths would name the same file, or one would have to be a directory
-    /// holding the other, on some system. Compared ignoring case because common file systems do.
-    /// </summary>
-    public static bool Collide(string a, string b) =>
-        string.Equals(a, b, StringComparison.OrdinalIgnoreCase)
-        || a.StartsWith(b + "/", StringComparison.OrdinalIgnoreCase)
-        || b.StartsWith(a + "/", StringComparison.OrdinalIgnoreCase);
-
     private static bool IsReserved(string firstComponent) =>
         string.Equals(firstComponent, Vocabulary.ManifestFile, StringComparison.OrdinalIgnoreCase)
         || string.Equals(firstComponent, Vocabulary.BuildFile, StringComparison.OrdinalIgnoreCase);
+}
+
+/// <summary>
+/// Finds paths that would name the same file, or where one would have to be a directory holding
+/// the other, on some system; compared ignoring case because common file systems do. Every path
+/// and every ancestor directory of one is kept in a hash set, so adding n paths costs time
+/// linear in their total length rather than a comparison of every pair.
+/// </summary>
+internal sealed class PathCollisions
+{
+    private readonly Dictionary<string, (string Path, string Where)> _files = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, (string Path, string Where)> _directories = new(StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>
+    /// Adds a path, returning how it collides with one added earlier ("collides with {where}
+    /// '{path}' (...)"), or null when it does not.
+    /// </summary>
+    public string? Add(string path, string where)
+    {
+        string? collision = null;
+        if (_files.TryGetValue(path, out (string Path, string Where) same))
+        {
+            collision = Describe(same, "the same file, ignoring case");
+        }
+        else if (_directories.TryGetValue(path, out (string Path, string Where) holder))
+        {
+            collision = Describe(holder, "one inside the other");
+        }
+
+        for (int slash = path.IndexOf('/', StringComparison.Ordinal); slash >= 0; slash = path.IndexOf('/', slash + 1))
+        {
+            string ancestor = path[..slash];
+            if (collision is null && _files.TryGetValue(ancestor, out (string Path, string Where) outer))
+            {
+                collision = Describe(outer, "one inside the other");
+            }
+
+            _directories.TryAdd(ancestor, (path, where));
+        }
+
+        _files.TryAdd(path, (path, where));
+        return collision;
+    }
+
+    private static string Describe((string Path, string Where) earlier, string how) =>
+        $"collides with {earlier.Where} '{earlier.Path}' ({how})";
 }

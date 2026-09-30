@@ -70,24 +70,13 @@ internal static class ManifestValidator
             Claim(segmentIds, m.Segments[i].Id, $"$.segments[{i}].id", errors);
         }
 
-        var paths = new List<(string Path, string Where)>();
+        var paths = new PathCollisions();
         for (int i = 0; i < m.Artifacts.Count; i++)
         {
-            if (m.Artifacts[i].Path is not { } path)
+            if (m.Artifacts[i].Path is { } path && paths.Add(path, $"$.artifacts[{i}].path") is { } collision)
             {
-                continue;
+                errors.Add(new CorpusError($"$.artifacts[{i}].path", $"'{path}' {collision}"));
             }
-
-            string where = $"$.artifacts[{i}].path";
-            foreach ((string otherPath, string otherWhere) in paths)
-            {
-                if (CorpusPaths.Collide(path, otherPath))
-                {
-                    errors.Add(new CorpusError(where, $"'{path}' collides with {otherWhere} '{otherPath}' (the same file, ignoring case, or one inside the other)"));
-                }
-            }
-
-            paths.Add((path, where));
         }
 
         return errors;

@@ -310,6 +310,92 @@ public class ManifestValidationTests
     }
 }
 
+/// <summary>
+/// Path collisions are checked in time linear in the number of paths. Comparing every pair
+/// took about a minute at 64,000 artifacts. The bounds are generous, to catch the quadratic
+/// shape rather than to time the machine.
+/// </summary>
+public class PathCollisionScaleTests
+{
+    private const int Count = 50_000;
+    private static readonly TimeSpan Bound = TimeSpan.FromSeconds(10);
+    private static readonly string Zero = "sha256:" + new string('0', 64);
+
+    [Fact]
+    public void A_manifest_with_many_artifacts_validates_in_linear_time_and_still_finds_a_collision()
+    {
+        var json = new StringBuilder("{\"schema\":\"rules-corpus/manifest/1\",\"corpusId\":\"x\",\"artifacts\":[");
+        for (int i = 0; i < Count; i++)
+        {
+            // The last path differs from the first only by case.
+            string path = i == Count - 1 ? "D0/F0" : $"d{i % 100}/f{i}";
+            json.Append(i == 0 ? "" : ",")
+                .Append($"{{\"id\":\"a{i}\",\"role\":\"source\",\"mediaType\":\"text/plain\",\"bytes\":0,\"digest\":\"{Zero}\",")
+                .Append($"\"stored\":true,\"path\":\"{path}\",\"acquisition\":{{\"origin\":\"o\"}}}}");
+        }
+
+        json.Append($"],\"derivations\":[],\"baselines\":[],\"segments\":[],\"contentDigest\":\"{Zero}\",\"manifestDigest\":\"{Zero}\"}}");
+        byte[] bytes = Encoding.UTF8.GetBytes(json.ToString());
+        var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+
+        CorpusException e = ManifestEdits.ParseFails(bytes);
+
+        Assert.True(stopwatch.Elapsed < Bound, $"took {stopwatch.Elapsed}");
+        ManifestEdits.AssertError(e, $"$.artifacts[{Count - 1}].path", "collides with $.artifacts[0].path 'd0/f0'");
+        Assert.Single(e.Errors, x => x.Reason.Contains("collides", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void A_build_definition_with_many_sources_is_read_in_linear_time()
+    {
+        var json = new StringBuilder("{\"schema\":\"rules-corpus/build/1\",\"corpusId\":\"x\",\"sources\":[");
+        for (int i = 0; i < Count; i++)
+        {
+            json.Append(i == 0 ? "" : ",").Append($"{{\"id\":\"s{i}\",\"path\":\"d{i % 100}/f{i}\",\"mediaType\":\"text/plain\",\"origin\":\"o\"}}");
+        }
+
+        json.Append("],\"derivations\":[],\"external\":[],\"baselines\":[]}");
+        var errors = new List<CorpusError>();
+        var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+
+        Build.BuildDefinition? definition = Build.BuildDefinition.Read(Encoding.UTF8.GetBytes(json.ToString()), errors);
+
+        Assert.True(stopwatch.Elapsed < Bound, $"took {stopwatch.Elapsed}");
+        Assert.Empty(errors);
+        Assert.Equal(Count, definition!.Sources.Count);
+    }
+
+    [Theory]
+    [InlineData("a/b", "a", "one inside the other")]
+    [InlineData("a", "a/b", "one inside the other")]
+    [InlineData("a/b/c", "A/B", "one inside the other")]
+    [InlineData("A/B", "a/b/c", "one inside the other")]
+    [InlineData("a/b", "A/b", "the same file")]
+    public void Collisions_are_found_whichever_path_comes_first(string first, string second, string reason)
+    {
+        var index = new Internal.PathCollisions();
+
+        Assert.Null(index.Add(first, "first"));
+        string? collision = index.Add(second, "second");
+
+        Assert.NotNull(collision);
+        Assert.Contains("first", collision, StringComparison.Ordinal);
+        Assert.Contains(reason, collision, StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData("a/b", "a/bc")]
+    [InlineData("a/b", "ab")]
+    [InlineData("a.b/c", "a/b/c")]
+    public void Paths_that_share_only_a_prefix_do_not_collide(string first, string second)
+    {
+        var index = new Internal.PathCollisions();
+
+        Assert.Null(index.Add(first, "first"));
+        Assert.Null(index.Add(second, "second"));
+    }
+}
+
 public class TwoIdentitiesTests
 {
     [Fact]
