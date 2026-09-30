@@ -87,3 +87,30 @@ segment's canonical bytes came from, and, when `pageMarker` is set and the segme
 a page, `pages` from the page at its first byte to the page at its last byte.
 
 Any other parameter key or value is a refusal. `segmentation` values not listed are a refusal.
+
+### Refusals the rules above imply
+
+The adapter takes the strict reading wherever the rules leave room:
+
+- `pagesContiguous` means the markers run 1, 2, 3, … starting at 1.
+- A page number is ASCII digits without a leading zero, fitting in a 32-bit integer.
+- Whether a line is a marker line is decided by the first match on it, which must cover the
+  whole line.
+- Any repeated segment id is a refusal, including `p{page}.b{k}` repeated because a page
+  number repeats.
+- A segment whose page at its last byte precedes the page at its first byte is a refusal.
+- A parameter that would have no effect is a refusal: `headingPattern` without
+  `segmentation` `headings`, or `pagesContiguous` without `pageMarker`.
+- Producing no segments is a refusal: empty input under `whole`, no blocks under `blocks`, a
+  heading pattern that matches nothing.
+- A `locator` group that is present in the pattern but empty or unmatched is a refusal.
+- Under `headings` and `whole`, marker lines are part of segment content; only `blocks`
+  excludes them.
+
+### A limit on the determinism claim
+
+Regular-expression classes such as `\d`, `\w` and case-insensitive matching use the Unicode
+tables built into the .NET runtime, which can differ between runtime versions. Same input and
+parameters give the same output on one runtime; across runtimes that holds only for patterns
+that avoid those constructs. Write ASCII classes (`[0-9]`, `[A-Za-z]`) in patterns a corpus
+depends on.
