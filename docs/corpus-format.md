@@ -235,6 +235,9 @@ Where the rules above leave room, readers and the builder take the strict readin
   and Windows drops a trailing `.`. Paths are at most 1024 characters with at most 255 per
   component, may not collide ignoring case, may not contain one another, and may not pass
   through a symbolic link.
+- Every file read from a corpus directory is a regular file: a named pipe, device or socket
+  at a path is refused without being opened. Build replaces each output by renaming a new
+  file over it, so a hard link at an output path is unlinked, never written through.
 - Segments are grouped in derivation order, with non-decreasing `start` within an artifact.
   A segment's bytes are well-formed UTF-8.
 - A reproducible derivation has exactly one input, and that input is stored.
