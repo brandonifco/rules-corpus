@@ -28,10 +28,10 @@ public sealed class CorpusManifest
         ContentDigest manifestDigest)
     {
         CorpusId = corpusId;
-        Artifacts = artifacts;
-        Derivations = derivations;
-        Baselines = baselines;
-        Segments = segments;
+        Artifacts = ReadOnly.List(artifacts);
+        Derivations = ReadOnly.List(derivations);
+        Baselines = ReadOnly.List(baselines);
+        Segments = ReadOnly.List(segments);
         ContentDigest = contentDigest;
         ManifestDigest = manifestDigest;
     }

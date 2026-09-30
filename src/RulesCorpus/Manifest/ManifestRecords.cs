@@ -1,4 +1,5 @@
 using RulesCorpus.Adapters;
+using RulesCorpus.Internal;
 
 namespace RulesCorpus;
 
@@ -121,13 +122,13 @@ public sealed class ManifestDerivation
         IReadOnlyList<string> losses)
     {
         Id = id;
-        Inputs = inputs;
+        Inputs = ReadOnly.List(inputs);
         Output = output;
         Tool = tool;
-        Parameters = parameters;
+        Parameters = ReadOnly.Map(parameters);
         Reproducibility = reproducibility;
         Fidelity = fidelity;
-        Losses = losses;
+        Losses = ReadOnly.List(losses);
     }
 
     /// <summary>The derivation id, unique in the manifest.</summary>
@@ -220,7 +221,7 @@ public sealed class ManifestSegment
         Length = length;
         Digest = digest;
         Locator = locator;
-        Sources = sources;
+        Sources = ReadOnly.List(sources);
     }
 
     /// <summary>The segment id, unique in the manifest.</summary>

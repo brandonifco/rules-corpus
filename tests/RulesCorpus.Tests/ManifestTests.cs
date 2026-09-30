@@ -311,6 +311,81 @@ public class ManifestValidationTests
 }
 
 /// <summary>
+/// A validated manifest cannot be changed by a caller: every collection it exposes is a
+/// read-only wrapper, not the list or dictionary it was built from behind an interface.
+/// </summary>
+public class ManifestImmutabilityTests
+{
+    private static void AssertReadOnly<T>(IReadOnlyList<T> list)
+    {
+        Assert.False(list is List<T>, "a List<T> can be downcast and mutated");
+        Assert.False(list is T[], "an array's elements can be replaced after a downcast");
+        IList<T> asList = Assert.IsAssignableFrom<IList<T>>(list);
+        Assert.True(asList.IsReadOnly);
+        Assert.Throws<NotSupportedException>(() => asList.Clear());
+    }
+
+    private static void AssertReadOnly(IReadOnlyDictionary<string, string> map)
+    {
+        Assert.False(map is SortedDictionary<string, string>, "a SortedDictionary can be downcast and mutated");
+        Assert.False(map is Dictionary<string, string>, "a Dictionary can be downcast and mutated");
+        IDictionary<string, string> asMap = Assert.IsAssignableFrom<IDictionary<string, string>>(map);
+        Assert.True(asMap.IsReadOnly);
+        Assert.Throws<NotSupportedException>(() => asMap["injected"] = "x");
+    }
+
+    private static void AssertDeeplyReadOnly(CorpusManifest m)
+    {
+        AssertReadOnly(m.Artifacts);
+        AssertReadOnly(m.Derivations);
+        AssertReadOnly(m.Baselines);
+        AssertReadOnly(m.Segments);
+        Assert.All(m.Derivations, d =>
+        {
+            AssertReadOnly(d.Inputs);
+            AssertReadOnly(d.Losses);
+            AssertReadOnly(d.Parameters);
+        });
+        Assert.All(m.Segments, s => AssertReadOnly(s.Sources));
+    }
+
+    [Fact]
+    public void A_parsed_manifest_exposes_only_read_only_collections()
+    {
+        using TempCorpus corpus = TempCorpus.WithExternal();
+        corpus.Build();
+
+        CorpusManifest m = CorpusManifest.Parse(corpus.ReadBytes("corpus.json"));
+
+        Assert.Contains(m.Derivations, d => d.Parameters.Count > 0);
+        Assert.Contains(m.Derivations, d => d.Losses.Count > 0);
+        Assert.Contains(m.Segments, s => s.Sources.Count > 0);
+        AssertDeeplyReadOnly(m);
+    }
+
+    [Fact]
+    public void A_built_manifest_exposes_only_read_only_collections()
+    {
+        using TempCorpus corpus = TempCorpus.WithExternal();
+
+        AssertDeeplyReadOnly(corpus.Build());
+    }
+
+    [Fact]
+    public void Parameters_keep_their_ordinal_key_order()
+    {
+        using TempCorpus corpus = TempCorpus.Stored();
+        corpus.EditBuild(d => d["derivations"]![0]!["parameters"] = new JsonObject { ["prefix"] = "p" });
+        corpus.Build();
+        byte[] edited = corpus.ReadBytes("corpus.json");
+
+        CorpusManifest m = CorpusManifest.Parse(edited);
+
+        Assert.Equal(edited, m.ToUtf8Json());
+    }
+}
+
+/// <summary>
 /// Path collisions are checked in time linear in the number of paths. Comparing every pair
 /// took about a minute at 64,000 artifacts. The bounds are generous, to catch the quadratic
 /// shape rather than to time the machine.
