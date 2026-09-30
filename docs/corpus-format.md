@@ -187,7 +187,7 @@ artifact and `corpus.json`.
   "derivations": [
     { "id": "rulebook-segmented", "adapter": "text", "input": "rulebook-text",
       "output": { "id": "rulebook-canonical", "path": "canonical/rulebook.txt" },
-      "parameters": { "segmentation": "blocks", "pageMarker": "^\\{(\\d+)\\}$" } }
+      "parameters": { "segmentation": "blocks", "pageMarker": "^\\{([0-9]+)\\}$" } }
   ],
   "external": [
     { "id": "rulebook-extraction", "inputs": ["rulebook-pdf"], "output": "rulebook-text",
