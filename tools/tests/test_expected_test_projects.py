@@ -85,6 +85,26 @@ class ExpectedTestProjectsTests(unittest.TestCase):
 
         self.assertEqual(0, etp.count(root))
 
+    def test_a_multi_targeted_test_project_counts_once_per_framework(self) -> None:
+        # dotnet test writes one result file per framework; counting projects would make the
+        # gate fail on every clean tree, or pass if one framework's run vanished.
+        root = self.tree(self.tmp / "repo")
+        self.write(root / "tests/A/A.csproj", """<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <IsTestProject>true</IsTestProject>
+    <TargetFrameworks>net8.0;net10.0</TargetFrameworks>
+    <TargetFramework />
+  </PropertyGroup>
+</Project>
+""")
+
+        self.assertEqual(3, etp.count(root))
+
+    def test_empty_entries_in_target_frameworks_are_not_frameworks(self) -> None:
+        self.assertEqual(2, etp.frameworks("<TargetFrameworks> net8.0; ;net10.0; </TargetFrameworks>"))
+        self.assertEqual(1, etp.frameworks("<TargetFrameworks></TargetFrameworks>"))
+        self.assertEqual(1, etp.frameworks("<TargetFramework>net10.0</TargetFramework>"))
+
 
 if __name__ == "__main__":
     unittest.main()

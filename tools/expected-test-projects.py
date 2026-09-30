@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""expected-test-projects -- how many test projects this repository should run.
+"""expected-test-projects -- how many test runs (project x target framework) this repository
+should produce.
 
 scripts/validate.sh compares this count against the number of TRX result files a test
 pass actually produced. The expectation is derived from the repository rather than from
@@ -34,15 +35,30 @@ IGNORED = {
 
 IS_TEST_PROJECT = re.compile(r"<IsTestProject>\s*true\s*</IsTestProject>", re.IGNORECASE)
 
+# `dotnet test` writes one result file per target framework of a multi-targeted project, so
+# the expectation counts (project, framework) pairs. A project without its own
+# <TargetFrameworks> builds the one framework Directory.Build.props sets.
+TARGET_FRAMEWORKS = re.compile(r"<TargetFrameworks>([^<]*)</TargetFrameworks>", re.IGNORECASE)
+
+
+def frameworks(text: str) -> int:
+    """How many target frameworks a project's own text declares; 1 when it declares none."""
+    declared = TARGET_FRAMEWORKS.search(text)
+    if declared is None:
+        return 1
+    return max(1, len([f for f in declared.group(1).split(";") if f.strip()]))
+
 
 def count(root: pathlib.Path) -> int:
-    """Test projects on disk under `root`, ignoring build output and nested checkouts."""
+    """Test runs expected under `root`: each test project once per target framework, ignoring
+    build output and nested checkouts."""
     found = 0
     for csproj in sorted(root.rglob("*.csproj")):
         if any(part in IGNORED for part in csproj.relative_to(root).parts):
             continue
-        if IS_TEST_PROJECT.search(csproj.read_text(encoding="utf-8", errors="replace")):
-            found += 1
+        text = csproj.read_text(encoding="utf-8", errors="replace")
+        if IS_TEST_PROJECT.search(text):
+            found += frameworks(text)
     return found
 
 

@@ -27,11 +27,6 @@ consumer or a release-blocking invariant (CLAUDE.md principle 6).
 - **M5 second format.** XML is the highest-value candidate (the regulatory consumer's source
   is eCFR XML). PDF only with a pinned, empirically reproducible extractor.
 - **Multi-document corpora.** FRCP-style byte-slice derivations of a larger release.
-- **Run the tests on net8.0.** The libraries target net8.0 and net10.0, but the test projects
-  run on net10.0 only. `Files/FileKind.cs` depends on the runtime's `SystemNative_LStat` shim;
-  a one-off probe on the 8.0.31 runtime classified regular files, directories, symbolic
-  links, a named pipe and `/dev/zero` correctly (2026-09-30), but nothing in the gate proves
-  it. Multi-target the test projects and add the 8.0 runtime to CI.
 - **M4 exit 3 policy.** An engine whose corpus includes an unstored artifact or an external
   derivation (srd-52-combat) always gets exit 3 from `verify`. Decide how an engine's gate
   treats that before replacing its intake check.

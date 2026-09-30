@@ -46,12 +46,16 @@ jobs:
         id: sdk
         run: echo "version=$(python3 -c 'import json;print(json.load(open("global.json"))["sdk"]["version"])')" >> "$GITHUB_OUTPUT"
 
-      # RulesCorpus multi-targets net8.0 so net8.0 engines can reference it; the tests run
-      # on net10.0 only, so the pinned SDK is all this job needs.
+      # RulesCorpus multi-targets net8.0 so net8.0 engines can reference it, and the library
+      # tests run on both frameworks. setup-dotnet installs SDKs, not runtimes: 8.0.131 is
+      # here only for the 8.0.31 runtime it carries (global.json still selects the pinned SDK
+      # for every command). Without it, the net8.0 test runs fail rather than skip.
       - name: Set up .NET
         uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
         with:
-          dotnet-version: ${{ steps.sdk.outputs.version }}
+          dotnet-version: |
+            8.0.131
+            ${{ steps.sdk.outputs.version }}
 
       - name: Validate
         env:
