@@ -98,6 +98,22 @@ public sealed class UsageTests
         Assert.False(Directory.Exists(s.PathOf("c")));
     }
 
+    [Theory]
+    [InlineData("init", "", "--corpus-id", "x")]
+    [InlineData("build", "--dir", "")]
+    [InlineData("verify", "")]
+    [InlineData("inspect", "", "--corpus", "")]
+    [InlineData("pack", "", "--dir", "")]
+    [InlineData("diff", "", "")]
+    public void An_empty_path_is_a_usage_error_not_the_working_directory(params string[] args)
+    {
+        using var s = new Scratch();
+        CliResult r = s.Run(args);
+        Assert.Equal(2, r.Exit);
+        Assert.Contains("empty path", r.Stderr, StringComparison.Ordinal);
+        Assert.Empty(Directory.GetFileSystemEntries(s.Root));
+    }
+
     [Fact]
     public void A_usage_error_under_json_also_writes_an_error_document()
     {

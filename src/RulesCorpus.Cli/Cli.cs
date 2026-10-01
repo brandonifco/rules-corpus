@@ -200,7 +200,10 @@ internal sealed class Context(Output output, string workingDirectory)
     public bool Json => Output.Json;
 
     /// <summary>An argument path made absolute against the working directory.</summary>
-    public string Resolve(string path) => Path.GetFullPath(path, workingDirectory);
+    /// <exception cref="UsageException">The path is empty; the working directory is spelled '.'.</exception>
+    public string Resolve(string path) => path.Length == 0
+        ? throw new UsageException("an empty path is not accepted; write '.' for the working directory")
+        : Path.GetFullPath(path, workingDirectory);
 }
 
 /// <summary>
