@@ -51,7 +51,7 @@ public sealed class UsageTests
         CliResult r = s.Run("--version");
         Assert.Equal(0, r.Exit);
         Assert.Equal(expected + "\n", r.Stdout);
-        Assert.StartsWith("0.1.0-dev", expected, StringComparison.Ordinal);
+        Assert.StartsWith("1.0.0", expected, StringComparison.Ordinal);
 
         CliResult json = s.Run("--version", "--json");
         Assert.Equal(expected, json.Json.GetProperty("version").GetString());
