@@ -95,6 +95,10 @@ RulesCorpus.CorpusLimits.MaxArtifactBytes.get -> long
 RulesCorpus.CorpusLimits.MaxArtifactBytes.init -> void
 RulesCorpus.CorpusLimits.MaxManifestBytes.get -> long
 RulesCorpus.CorpusLimits.MaxManifestBytes.init -> void
+RulesCorpus.CorpusLimits.MaxPackedBytes.get -> long
+RulesCorpus.CorpusLimits.MaxPackedBytes.init -> void
+RulesCorpus.CorpusLimits.MaxPackedEntries.get -> int
+RulesCorpus.CorpusLimits.MaxPackedEntries.init -> void
 RulesCorpus.CorpusLimits.MaxSegments.get -> int
 RulesCorpus.CorpusLimits.MaxSegments.init -> void
 RulesCorpus.CorpusManifest

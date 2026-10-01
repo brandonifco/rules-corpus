@@ -1,5 +1,1 @@
 #nullable enable
-RulesCorpus.CorpusLimits.MaxPackedBytes.get -> long
-RulesCorpus.CorpusLimits.MaxPackedBytes.init -> void
-RulesCorpus.CorpusLimits.MaxPackedEntries.get -> int
-RulesCorpus.CorpusLimits.MaxPackedEntries.init -> void
