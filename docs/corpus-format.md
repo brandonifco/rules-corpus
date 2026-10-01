@@ -297,3 +297,14 @@ compressed output would depend on the compressor's version.
 Builds refuse, rather than truncate: any single artifact over 256 MiB, more than 1,000,000
 segments in a manifest, and a manifest file over 256 MiB. Adapters receive the limits and
 apply their own (see [adapter-contract.md](adapter-contract.md)).
+
+Reading a packed corpus refuses, rather than truncates, an archive of more than 10,000 entries
+or more than 1 GiB of entry content in total (four times the per-file bound: the manifest, the
+build definition and several maximum-size artifacts), on top of the per-entry bounds. Without
+the aggregate bounds, many entries each under the per-entry bound could exhaust memory before
+any manifest check ran.
+
+The bounds are the properties of `CorpusLimits`, and a value that could never be a limit is
+refused where it is set: none may be zero or negative, and the two per-file byte bounds may not
+exceed what one array can hold (`Array.MaxLength`), because each file is read into one array
+([decision 0013](decisions/0013-limits-are-validated-and-bound-the-whole-archive.md)).

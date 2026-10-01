@@ -32,6 +32,7 @@ internal sealed class PackedCorpusFiles : CorpusFiles
     {
         var result = new PackedCorpusFiles();
         long maxEntry = Math.Max(limits.MaxArtifactBytes, limits.MaxManifestBytes);
+        long loadedBytes = 0;
         using var hashing = new HashingReadStream(packed);
         try
         {
@@ -39,6 +40,13 @@ internal sealed class PackedCorpusFiles : CorpusFiles
             while (reader.GetNextEntry(copyData: false) is { } entry)
             {
                 string name = entry.Name;
+                if (result.EntryNames.Count >= limits.MaxPackedEntries)
+                {
+                    // Stop reading: the rest of the archive is not examined, and the refusal says so.
+                    result.Problems.Add($"the archive has more than {limits.MaxPackedEntries} entries; the limit is {limits.MaxPackedEntries}");
+                    return result;
+                }
+
                 result.EntryNames.Add(name);
                 if (entry.EntryType != TarEntryType.RegularFile)
                 {
@@ -64,6 +72,14 @@ internal sealed class PackedCorpusFiles : CorpusFiles
                     continue;
                 }
 
+                if (loadedBytes + entry.Length > limits.MaxPackedBytes)
+                {
+                    // Refuse the archive: entries already read are not a usable corpus.
+                    result.Problems.Add($"entry '{name}' would bring the archive to {loadedBytes + entry.Length} bytes of content; the limit is {limits.MaxPackedBytes}");
+                    return result;
+                }
+
+                loadedBytes += entry.Length;
                 byte[] data = new byte[entry.Length];
                 entry.DataStream?.ReadExactly(data);
                 result.files.Add(name, data);
