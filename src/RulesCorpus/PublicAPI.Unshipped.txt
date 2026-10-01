@@ -151,6 +151,9 @@ RulesCorpus.ManifestDiff.BaselinesAdded.get -> System.Collections.Generic.IReadO
 RulesCorpus.ManifestDiff.BaselinesChanged.get -> System.Collections.Generic.IReadOnlyList<RulesCorpus.ManifestChange<RulesCorpus.ManifestBaseline!>!>!
 RulesCorpus.ManifestDiff.BaselinesRemoved.get -> System.Collections.Generic.IReadOnlyList<RulesCorpus.ManifestBaseline!>!
 RulesCorpus.ManifestDiff.ContentDigestEqual.get -> bool
+RulesCorpus.ManifestDiff.DerivationsAdded.get -> System.Collections.Generic.IReadOnlyList<RulesCorpus.ManifestDerivation!>!
+RulesCorpus.ManifestDiff.DerivationsChanged.get -> System.Collections.Generic.IReadOnlyList<RulesCorpus.ManifestChange<RulesCorpus.ManifestDerivation!>!>!
+RulesCorpus.ManifestDiff.DerivationsRemoved.get -> System.Collections.Generic.IReadOnlyList<RulesCorpus.ManifestDerivation!>!
 RulesCorpus.ManifestDiff.ManifestDigestEqual.get -> bool
 RulesCorpus.ManifestDiff.SegmentsAdded.get -> System.Collections.Generic.IReadOnlyList<RulesCorpus.ManifestSegment!>!
 RulesCorpus.ManifestDiff.SegmentsChanged.get -> System.Collections.Generic.IReadOnlyList<RulesCorpus.ManifestChange<RulesCorpus.ManifestSegment!>!>!

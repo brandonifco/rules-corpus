@@ -343,9 +343,25 @@ internal static class ManifestValidator
         for (int i = 0; i < m.Segments.Count; i++)
         {
             ManifestSegment s = m.Segments[i];
+
+            // An adapter's source spans are into the one artifact it ran over. The derivations check
+            // reports a reproducible derivation without exactly one input.
+            string? input = index.Artifact.TryGetValue(s.Artifact, out int segmentArtifact)
+                && m.Artifacts[segmentArtifact].DerivedBy is { } by
+                && index.Derivation.TryGetValue(by, out int derivation)
+                && m.Derivations[derivation] is { Reproducibility: DerivationReproducibility.Reproducible, Inputs.Count: 1 } d
+                    ? d.Inputs[0]
+                    : null;
+
             for (int k = 0; k < s.Sources.Count; k++)
             {
                 ManifestSourceSpan span = s.Sources[k];
+                if (input is not null && !string.Equals(span.Artifact, input, StringComparison.Ordinal)
+                    && index.Artifact.ContainsKey(span.Artifact))
+                {
+                    errors.Add(new CorpusError($"$.segments[{i}].sources[{k}].artifact", $"'{span.Artifact}' is not the input '{input}' of the derivation that produced '{s.Artifact}'"));
+                }
+
                 if (span.Bytes is { } range && index.Artifact.TryGetValue(span.Artifact, out int ai))
                 {
                     ManifestArtifact a = m.Artifacts[ai];

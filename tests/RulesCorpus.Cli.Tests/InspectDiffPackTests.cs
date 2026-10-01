@@ -87,6 +87,24 @@ public sealed class InspectDiffPackTests
         Assert.True(json.Json.GetProperty("contentDigestEqual").GetBoolean());
         Assert.True(json.Json.GetProperty("manifestDigestEqual").GetBoolean());
         Assert.Equal(0, json.Json.GetProperty("segments").GetProperty("changed").GetArrayLength());
+        Assert.Equal(0, json.Json.GetProperty("derivations").GetProperty("changed").GetArrayLength());
+    }
+
+    [Fact]
+    public void Diff_shows_a_derivation_whose_parameters_changed_when_no_artifact_or_segment_did()
+    {
+        using var s = new Scratch();
+        string before = s.BuiltSample("regulatory", "before");
+        string changed = s.FreshSample("regulatory", "changed");
+        string definition = Path.Combine(changed, "corpus.build.json");
+        File.WriteAllText(definition, File.ReadAllText(definition).Replace("107\\\\.[0-9]+", "107\\\\.[0-9]{1,}", StringComparison.Ordinal));
+        Assert.Equal(0, s.Run("build", "--dir", changed).Exit);
+
+        CliResult human = s.Run("diff", before, changed);
+        Assert.Contains("~ derivation cfr-14-107-sections", human.Stdout, StringComparison.Ordinal);
+        Assert.DoesNotContain("~ segment", human.Stdout, StringComparison.Ordinal);
+        JsonElement json = s.Run("diff", before, changed, "--json").Json;
+        Assert.Equal("cfr-14-107-sections", json.GetProperty("derivations").GetProperty("changed")[0].GetProperty("after").GetProperty("id").GetString());
     }
 
     [Fact]

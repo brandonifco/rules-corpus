@@ -19,6 +19,7 @@ text-hygiene in every editor and tool that might round-trip it.
 """
 from __future__ import annotations
 
+import os
 import contextlib
 import importlib.util
 import io
@@ -210,6 +211,16 @@ class TextHygieneTests(CheckTestCase):
     def test_clean_tree_passes(self) -> None:
         self.assertPasses()
 
+    def test_symlink_under_src_fails_because_the_other_checks_do_not_follow_it(self) -> None:
+        self.repo.write("outside/Linked.cs", "namespace X;\n")
+        os.symlink("../../outside/Linked.cs", self.repo.root / "src/RulesCorpus/Linked.cs")
+        self.assertFailsWith("src/RulesCorpus/Linked.cs: symbolic link")
+
+    def test_symlink_outside_src_is_allowed(self) -> None:
+        self.repo.write("docs/target.md", "# x\n")
+        os.symlink("target.md", self.repo.root / "docs/alias.md")
+        self.assertPasses()
+
     def test_bom_fails(self) -> None:
         self.repo.write_bytes("docs/bom.md", b"\xef\xbb\xbf# x\n")
         self.assertFailsWith("docs/bom.md: UTF-8 byte-order mark")
@@ -317,6 +328,11 @@ class LayeringTests(CheckTestCase):
         self.repo.write_project("src/RulesCorpus.Adapters.Xml", "library", ["src/RulesCorpus"])
         self.assertFailsWith("src/RulesCorpus.Adapters.Xml/RulesCorpus.Adapters.Xml.csproj",
                              "not declared in ALLOWED_PROJECT_REFS")
+
+    def test_declared_project_whose_csproj_was_deleted_fails_though_its_directory_remains(self) -> None:
+        self.repo.write("src/RulesCorpus.Adapters.Text/Leftover.cs", "namespace X;\n")
+        (self.repo.root / "src/RulesCorpus.Adapters.Text/RulesCorpus.Adapters.Text.csproj").unlink()
+        self.assertFailsWith("src/RulesCorpus.Adapters.Text: declared in ALLOWED_PROJECT_REFS but has no csproj")
 
     def test_core_referencing_upward_fails(self) -> None:
         self.repo.write_project("src/RulesCorpus", "library", ["src/RulesCorpus.Adapters.Text"])

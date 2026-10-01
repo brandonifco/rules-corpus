@@ -24,6 +24,19 @@ internal static class Commands
     private static readonly CommandSpec DiffSpec = new("diff", 2, 2, [], [], []);
     private static readonly CommandSpec PackSpec = new("pack", 1, 1, ["--dir"], [], ["--allow-not-verified"]);
 
+    /// <summary>The options of <paramref name="command"/> that take the next token as their value; none for an unknown command.</summary>
+    public static IReadOnlyList<string> ValueOptionsOf(string command) => command switch
+    {
+        "init" => InitSpec.ValueOptions,
+        "import" => ImportSpec.ValueOptions,
+        "build" => BuildSpec.ValueOptions,
+        "verify" => VerifySpec.ValueOptions,
+        "inspect" => InspectSpec.ValueOptions,
+        "diff" => DiffSpec.ValueOptions,
+        "pack" => PackSpec.ValueOptions,
+        _ => [],
+    };
+
     /// <summary>The adapters this tool ships, for build and rebuild.</summary>
     private static ICorpusAdapter[] Adapters => [new TextAdapter()];
 
@@ -413,6 +426,7 @@ internal static class Commands
                 .Add("contentDigestEqual", CjValue.Of(d.ContentDigestEqual))
                 .Add("manifestDigestEqual", CjValue.Of(d.ManifestDigestEqual))
                 .Add("artifacts", Changes(d.ArtifactsAdded, d.ArtifactsRemoved, d.ArtifactsChanged, ManifestJson.ToJson))
+                .Add("derivations", Changes(d.DerivationsAdded, d.DerivationsRemoved, d.DerivationsChanged, ManifestJson.ToJson))
                 .Add("baselines", Changes(d.BaselinesAdded, d.BaselinesRemoved, d.BaselinesChanged, ManifestJson.ToJson))
                 .Add("segments", Changes(d.SegmentsAdded, d.SegmentsRemoved, d.SegmentsChanged, ManifestJson.ToJson)),
             () => RenderDiff(context.Output, a, b, d));
@@ -658,6 +672,9 @@ internal static class Commands
         lines.AddRange(d.ArtifactsAdded.Select(x => $"+ artifact {x.Id}"));
         lines.AddRange(d.ArtifactsRemoved.Select(x => $"- artifact {x.Id}"));
         lines.AddRange(d.ArtifactsChanged.Select(x => $"~ artifact {x.After.Id}"));
+        lines.AddRange(d.DerivationsAdded.Select(x => $"+ derivation {x.Id}"));
+        lines.AddRange(d.DerivationsRemoved.Select(x => $"- derivation {x.Id}"));
+        lines.AddRange(d.DerivationsChanged.Select(x => $"~ derivation {x.After.Id}"));
         lines.AddRange(d.BaselinesAdded.Select(x => $"+ baseline {x.SourceId}"));
         lines.AddRange(d.BaselinesRemoved.Select(x => $"- baseline {x.SourceId}"));
         lines.AddRange(d.BaselinesChanged.Select(x => $"~ baseline {x.After.SourceId}"));
@@ -673,7 +690,7 @@ internal static class Commands
         {
             o.Line(d.ManifestDigestEqual
                 ? "no differences"
-                : "no artifact, baseline or segment differs; the difference is elsewhere in the manifest (corpus id, derivations or build definition)");
+                : "no artifact, derivation, baseline or segment differs; the difference is elsewhere in the manifest (corpus id or build definition)");
         }
     }
 

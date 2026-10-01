@@ -271,6 +271,23 @@ public class VerifierTests
     }
 
     [Fact]
+    public void Rebuild_refuses_two_adapters_with_one_id_whichever_order_they_are_supplied_in()
+    {
+        using TempCorpus corpus = TempCorpus.Stored();
+        corpus.Build();
+
+        VerificationReport matchingFirst = Verify(corpus, new VerificationOptions { Rebuild = true, Adapters = [new LinesAdapter("1"), new LinesAdapter("2")] });
+        VerificationReport matchingLast = Verify(corpus, new VerificationOptions { Rebuild = true, Adapters = [new LinesAdapter("2"), new LinesAdapter("1")] });
+
+        foreach (VerificationReport report in new[] { matchingFirst, matchingLast })
+        {
+            VerificationCheck rebuild = Check(report, "rebuild notes-lines");
+            Assert.Equal(VerificationOutcome.Failed, rebuild.Outcome);
+            Assert.Contains("two adapters are named 'lines'", rebuild.Detail, StringComparison.Ordinal);
+        }
+    }
+
+    [Fact]
     public void Rebuild_fails_with_a_different_adapter_version()
     {
         using TempCorpus corpus = TempCorpus.Stored();

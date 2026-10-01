@@ -304,10 +304,14 @@ public static class CorpusVerifier
         List<VerificationCheck> checks)
     {
         var adapters = new Dictionary<string, ICorpusAdapter>(StringComparer.Ordinal);
+        var duplicated = new HashSet<string>(StringComparer.Ordinal);
         foreach (ICorpusAdapter adapter in options.Adapters ?? [])
         {
             ArgumentNullException.ThrowIfNull(adapter, nameof(options));
-            adapters.TryAdd(adapter.Id, adapter);
+            if (!adapters.TryAdd(adapter.Id, adapter))
+            {
+                duplicated.Add(adapter.Id);
+            }
         }
 
         for (int i = 0; i < manifest.Derivations.Count; i++)
@@ -320,7 +324,10 @@ public static class CorpusVerifier
                 continue;
             }
 
-            checks.Add(Rebuild(manifest, d, i, bytesById, adapters, limits, name));
+            // As the builder does: which of two same-named adapters ran would depend on supply order.
+            checks.Add(duplicated.Contains(d.Tool.Id)
+                ? new VerificationCheck(name, VerificationOutcome.Failed, $"two adapters are named '{d.Tool.Id}'; which one ran would be ambiguous")
+                : Rebuild(manifest, d, i, bytesById, adapters, limits, name));
         }
     }
 
