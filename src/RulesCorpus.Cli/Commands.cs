@@ -19,7 +19,7 @@ internal static class Commands
         []);
 
     private static readonly CommandSpec BuildSpec = new("build", 0, 0, ["--dir"], [], []);
-    private static readonly CommandSpec VerifySpec = new("verify", 0, 1, [], [], ["--rebuild", "--allow-not-verified"]);
+    private static readonly CommandSpec VerifySpec = new("verify", 0, 1, ["--expect-not-verified"], [], ["--rebuild", "--allow-not-verified"]);
     private static readonly CommandSpec InspectSpec = new("inspect", 1, 1, ["--corpus"], [], []);
     private static readonly CommandSpec DiffSpec = new("diff", 2, 2, [], [], []);
     private static readonly CommandSpec PackSpec = new("pack", 1, 1, ["--dir"], [], ["--allow-not-verified"]);
@@ -213,6 +213,7 @@ internal static class Commands
         Arguments args = Arguments.Parse(tokens, VerifySpec);
         string target = context.Resolve(args.Positionals.Count == 0 ? "." : args.Positionals[0]);
         bool allow = args.Switch("--allow-not-verified");
+        string[]? expected = ExpectedNotVerified(args, allow);
         CorpusFiles files = Open(target);
         VerificationReport report = CorpusVerifier.Verify(files, new VerificationOptions
         {
@@ -221,8 +222,20 @@ internal static class Commands
         });
 
         int exit = ExitFor(report, allow);
+        Expectation? expectation = null;
+        if (expected is not null)
+        {
+            expectation = Expectation.Of(expected, report);
+            if (report.Outcome != VerificationOutcome.Failed)
+            {
+                exit = expectation.Met ? Cli.ExitOk : Cli.ExitFailed;
+            }
+        }
+
         context.Output.Result(
-            ReportJson("verify", report, exit).Add("target", CjValue.Of(target)),
+            ReportJson("verify", report, exit)
+                .Add("target", CjValue.Of(target))
+                .AddOptional("expectedNotVerified", expectation?.ToJson()),
             () =>
             {
                 foreach (VerificationCheck check in report.Checks)
@@ -231,9 +244,97 @@ internal static class Commands
                 }
 
                 context.Output.Line($"verify {target}: {Summary(report)}");
+                if (expectation is not null)
+                {
+                    context.Output.Line($"expected not verified: {expectation.Describe()}");
+                }
             });
         NoteNotVerified(context, report, exit);
         return exit;
+    }
+
+    /// <summary>
+    /// The check names <c>--expect-not-verified</c> pins, comma-separated and in the caller's
+    /// order. Check names are built from ids, which never contain a comma.
+    /// </summary>
+    private static string[]? ExpectedNotVerified(Arguments args, bool allow)
+    {
+        string? value = args.Option("--expect-not-verified");
+        if (value is null)
+        {
+            return null;
+        }
+
+        if (allow)
+        {
+            throw new UsageException("verify: --expect-not-verified and --allow-not-verified cannot be combined; the first accepts exactly the named checks, the second accepts any");
+        }
+
+        string[] names = value.Split(',');
+        var seen = new HashSet<string>(StringComparer.Ordinal);
+        foreach (string name in names)
+        {
+            if (name.Length == 0 || name.Trim() != name)
+            {
+                throw new UsageException($"verify: --expect-not-verified '{value}' has an empty or space-padded check name; give names exactly as verify prints them, separated by commas");
+            }
+
+            if (!seen.Add(name))
+            {
+                throw new UsageException($"verify: --expect-not-verified names '{name}' more than once");
+            }
+        }
+
+        return names;
+    }
+
+    /// <summary>
+    /// The comparison of a pinned set of not-verified checks with a report's. It is met only
+    /// when the two sets are equal: an extra not-verified check is evidence the consumer never
+    /// agreed to leave unchecked, and a pinned check that is no longer not verified means the
+    /// corpus is not the one the pin describes.
+    /// </summary>
+    private sealed record Expectation(string[] Expected, string[] Unexpected, string[] Missing)
+    {
+        public bool Met => Unexpected.Length == 0 && Missing.Length == 0;
+
+        public static Expectation Of(string[] expected, VerificationReport report)
+        {
+            string[] actual = [.. report.Checks.Where(c => c.Outcome == VerificationOutcome.NotVerified).Select(c => c.Name)];
+            return new Expectation(
+                expected,
+                [.. actual.Where(n => !expected.Contains(n, StringComparer.Ordinal))],
+                [.. expected.Where(n => !actual.Contains(n, StringComparer.Ordinal))]);
+        }
+
+        public CjObject ToJson() => new CjObject()
+            .Add("expected", Strings(Expected))
+            .Add("unexpected", Strings(Unexpected))
+            .Add("missing", Strings(Missing))
+            .Add("met", CjValue.Of(Met));
+
+        public string Describe()
+        {
+            if (Met)
+            {
+                return $"met ({Expected.Length} named, and no others)";
+            }
+
+            var parts = new List<string>();
+            if (Unexpected.Length > 0)
+            {
+                parts.Add($"not verified but not expected: {string.Join(", ", Unexpected)}");
+            }
+
+            if (Missing.Length > 0)
+            {
+                parts.Add($"expected but not reported not verified: {string.Join(", ", Missing)}");
+            }
+
+            return "NOT met; " + string.Join("; ", parts);
+        }
+
+        private static CjArray Strings(string[] values) => new(values.Select(v => (CjValue)CjValue.Of(v)));
     }
 
     public static int Inspect(Context context, IReadOnlyList<string> tokens)
@@ -510,7 +611,7 @@ internal static class Commands
     {
         if (exit == Cli.ExitNotVerified)
         {
-            context.Output.Note("rules-corpus: some checks were not verified (exit 3); pass --allow-not-verified to accept that");
+            context.Output.Note("rules-corpus: some checks were not verified (exit 3); pass --expect-not-verified with their names to accept exactly those, or --allow-not-verified to accept any");
         }
     }
 

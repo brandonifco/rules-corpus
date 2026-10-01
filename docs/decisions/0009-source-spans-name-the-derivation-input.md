@@ -1,4 +1,4 @@
-# 0008. A segment's source spans name its derivation's input
+# 0009. A segment's source spans name its derivation's input
 
 **Status:** accepted. Decided under the review follow-up of 2026-10-01.
 

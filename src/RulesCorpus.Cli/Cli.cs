@@ -31,9 +31,12 @@ internal static class Cli
               clock is never read. Refuses an existing file, path or id.
           build [--dir <corpus>]
               Build the corpus (default: the current directory) with the text adapter.
-          verify [<corpus dir or .tar>] [--rebuild] [--allow-not-verified]
+          verify [<corpus dir or .tar>] [--rebuild]
+                 [--allow-not-verified | --expect-not-verified <check>[,<check>...]]
               Verify a corpus and print every check. --rebuild re-runs every reproducible
-              derivation and requires byte-identical output.
+              derivation and requires byte-identical output. --expect-not-verified names,
+              exactly as printed, the checks a consumer accepts as not verified: exit 0
+              when those and no others are not verified and none failed, 1 otherwise.
           inspect <segment-id> [--corpus <dir or .tar>]
               Print a segment's metadata and its exact text, after checking its digest.
           diff <a> <b>
@@ -49,10 +52,11 @@ internal static class Cli
 
         Exit codes:
           0  success
-          1  build or verification failure (any failed check), or refused input
+          1  build or verification failure (any failed check, or an --expect-not-verified
+             pin that was not met), or refused input
           2  usage error: unknown command or option, missing or malformed argument
           3  verify or pack found checks that were not verified and none that failed,
-             and --allow-not-verified was not given
+             and neither --allow-not-verified nor --expect-not-verified was given
         """;
 
     private static readonly UTF8Encoding StrictUtf8 = new(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true);

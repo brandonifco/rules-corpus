@@ -1,6 +1,7 @@
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using System.Text.RegularExpressions;
 using RulesCorpus.Adapters;
 using RulesCorpus.Tests.Support;
 
@@ -26,7 +27,10 @@ public class ManifestRoundTripTests
         using TempCorpus corpus = TempCorpus.Stored();
         corpus.Build();
         byte[] written = corpus.ReadBytes("corpus.json");
-        string reformatted = JsonNode.Parse(written)!.ToJsonString(new JsonSerializerOptions { WriteIndented = true, IndentSize = 7 });
+        // Seven-space indentation, widened by hand: JsonSerializerOptions.IndentSize is not in net8.0.
+        // JSON strings hold no raw newline, so a line's leading spaces are always indentation.
+        string indented = JsonNode.Parse(written)!.ToJsonString(new JsonSerializerOptions { WriteIndented = true });
+        string reformatted = Regex.Replace(indented, "(?m)^ +", m => new string(' ', m.Length / 2 * 7));
 
         CorpusManifest parsed = CorpusManifest.Parse(Encoding.UTF8.GetBytes(reformatted));
 

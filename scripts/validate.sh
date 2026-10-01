@@ -51,7 +51,8 @@ skipped() { printf '%sskip%s %s (depends on a step that failed)\n' "$YEL" "$OFF"
 # The fix asks two independent questions of the actual test-run output (a TRX file per
 # project, requested below), not of the exit code:
 #   1. did every test project ON DISK (<IsTestProject>true</IsTestProject> in its own
-#      .csproj, found by walking the repository) produce a result file? Deriving that
+#      .csproj, found by walking the repository) produce a result file for each target
+#      framework its own <TargetFrameworks> declares? Deriving that
 #      expectation from the repository rather than from $SOLUTION is the whole point: a
 #      project dropped from the solution also drops out of a count taken FROM the solution,
 #      so the expectation falls in step with the actual and the assertion can never fail.
@@ -88,9 +89,9 @@ for f in trx_files:
 problems = []
 if len(trx_files) != expected:
     problems.append(
-        f"expected {expected} test-project result file(s) (from "
-        f"<IsTestProject>true</IsTestProject> in the solution's own .csproj files), "
-        f"found {len(trx_files)}. A test project silently stopped running."
+        f"expected {expected} test result file(s) (one per target framework of each "
+        f"<IsTestProject>true</IsTestProject> .csproj), found {len(trx_files)}. A test "
+        f"project, or one of its frameworks, silently stopped running."
     )
 if total == 0:
     problems.append("zero tests were discovered/executed across all test projects")
@@ -107,12 +108,17 @@ EXPECTED_TEST_PROJECTS="$(expected_test_projects)"
 
 # `env` with no VAR=val arguments before the command just execs it unchanged, so
 # `test_pass Debug` (no third argument) and `test_pass Debug CI=true` share one code path.
+# DOTNET_ROLL_FORWARD is removed because it could run the net8.0 tests on a newer runtime,
+# which proves nothing about net8.0: with DOTNET_ROLL_FORWARD=Major and no 8.0 runtime, the
+# net8.0 tests "pass" on 10.0 (verified, SDK 10.0.112). Without it, the testhost refuses to
+# start and dotnet test exits 1 (verified; it still writes the TRX, so the exit code is what
+# fails here).
 test_pass() {
   local config="$1"; shift
   local results_dir status
   results_dir="$(mktemp -d)"
   status=0
-  env "$@" dotnet test "$SOLUTION" -c "$config" --no-build --nologo \
+  env -u DOTNET_ROLL_FORWARD "$@" dotnet test "$SOLUTION" -c "$config" --no-build --nologo \
     --logger "trx" --results-directory "$results_dir" || status=$?
   if ! assert_tests_ran "$results_dir" "$EXPECTED_TEST_PROJECTS"; then
     status=1

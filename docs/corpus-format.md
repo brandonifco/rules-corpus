@@ -158,7 +158,7 @@ A source span maps the segment back to evidence it came from:
 ```
 
 `artifact` names the input of the derivation that produced the segment's artifact
-([decision 0008](decisions/0008-source-spans-name-the-derivation-input.md)). A span carries `pages` (1 ≤ `from` ≤ `to`), or
+([decision 0009](decisions/0009-source-spans-name-the-derivation-input.md)). A span carries `pages` (1 ≤ `from` ≤ `to`), or
 `start` and `length` (a byte range lying within that artifact), or both.
 
 ### The two identities

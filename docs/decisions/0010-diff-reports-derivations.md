@@ -1,4 +1,4 @@
-# 0009. Diff reports derivations
+# 0010. Diff reports derivations
 
 **Status:** accepted. Decided under the review follow-up of 2026-10-01.
 

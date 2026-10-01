@@ -38,7 +38,9 @@ rules-corpus diff samples/regulatory my-corpus.tar
 
 Every command takes `--json` for machine-readable output on stdout. Exit codes: 0 success;
 1 a failed check or refused input; 2 a usage error; 3 some checks were not verified and none
-failed (pass `--allow-not-verified` to accept that). `rules-corpus --help` has the details.
+failed. A consumer names the checks it accepts as not verified with
+`--expect-not-verified` ([decision 0008](docs/decisions/0008-consumers-pin-the-checks-they-accept-as-not-verified.md));
+`--allow-not-verified` accepts any. `rules-corpus --help` has the details.
 
 Two worked examples are committed in [samples/](samples/README.md), with their built outputs:
 a regulatory excerpt segmented by section headings, and a rulebook excerpt whose source PDF is
