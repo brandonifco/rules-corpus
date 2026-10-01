@@ -465,10 +465,7 @@ internal static class Commands
         using var archive = new MemoryStream();
         CorpusPacker.Pack(directory, archive, new VerificationOptions(), allow);
         byte[] bytes = archive.ToArray();
-        using (var stream = new FileStream(destination, FileMode.CreateNew, FileAccess.Write))
-        {
-            stream.Write(bytes);
-        }
+        AtomicFile.CreateNew(destination, stream => stream.Write(bytes));
 
         ContentDigest digest = ContentDigest.Compute(bytes);
         context.Output.Result(
