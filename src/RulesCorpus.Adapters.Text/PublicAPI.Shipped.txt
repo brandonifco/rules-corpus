@@ -1,1 +1,7 @@
 #nullable enable
+RulesCorpus.Adapters.Text.TextAdapter
+RulesCorpus.Adapters.Text.TextAdapter.Derive(RulesCorpus.Adapters.AdapterInput! input) -> RulesCorpus.Adapters.AdapterOutput!
+RulesCorpus.Adapters.Text.TextAdapter.Id.get -> string!
+RulesCorpus.Adapters.Text.TextAdapter.IsDeterministic.get -> bool
+RulesCorpus.Adapters.Text.TextAdapter.TextAdapter() -> void
+RulesCorpus.Adapters.Text.TextAdapter.Version.get -> string!

@@ -163,6 +163,7 @@ sys.exit(0 if d["segment"]["id"] == sys.argv[2] and d["text"].startswith(sys.arg
 }
 
 check_sample regulatory 0 "107.9" "§ 107.9 Safety event reporting."
+check_sample regulatory-xml 0 "107.2" "<DIV8 N=\"107.2\""
 check_sample rulebook 3 "p191.b1" "Unconscious [Condition]"
 
 echo

@@ -1,0 +1,37 @@
+{
+  "baselines": [
+    {
+      "artifact": "cfr-14-107-xml",
+      "asOf": "2026-01-01",
+      "hashDerivation": "ecfr-versioner-xml-excerpt-107.1-107.2",
+      "sourceId": "cfr-14-107-xml-excerpt"
+    }
+  ],
+  "corpusId": "cfr-14-107-xml-excerpt",
+  "derivations": [
+    {
+      "adapter": "xml",
+      "id": "cfr-14-107-sections",
+      "input": "cfr-14-107-xml",
+      "output": {
+        "id": "cfr-14-107-canonical",
+        "path": "canonical/14-cfr-107-excerpt.xml"
+      },
+      "parameters": {
+        "idAttribute": "N",
+        "segmentElement": "DIV8"
+      }
+    }
+  ],
+  "external": [],
+  "schema": "rules-corpus/build/1",
+  "sources": [
+    {
+      "id": "cfr-14-107-xml",
+      "mediaType": "application/xml",
+      "notes": "The part heading, the Subpart A heading and 14 CFR 107.1 and 107.2, cut from the eCFR versioner XML of 14 CFR part 107 as of 2026-01-01 served at the origin: the elements are unchanged and the rest of the part is removed. A work of the United States Government, in the public domain. No retrieval date is recorded because none was kept when the excerpt was made.",
+      "origin": "https://www.ecfr.gov/api/versioner/v1/full/2026-01-01/title-14.xml?part=107",
+      "path": "sources/14-cfr-107-excerpt.xml"
+    }
+  ]
+}

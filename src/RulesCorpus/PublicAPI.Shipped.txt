@@ -1,1 +1,234 @@
 #nullable enable
+RulesCorpus.Adapters.AdapterInput
+RulesCorpus.Adapters.AdapterInput.AdapterInput(string! artifactId, System.ReadOnlyMemory<byte> bytes, System.Collections.Generic.IReadOnlyDictionary<string!, string!>! parameters, RulesCorpus.CorpusLimits! limits) -> void
+RulesCorpus.Adapters.AdapterInput.ArtifactId.get -> string!
+RulesCorpus.Adapters.AdapterInput.Bytes.get -> System.ReadOnlyMemory<byte>
+RulesCorpus.Adapters.AdapterInput.Limits.get -> RulesCorpus.CorpusLimits!
+RulesCorpus.Adapters.AdapterInput.Parameters.get -> System.Collections.Generic.IReadOnlyDictionary<string!, string!>!
+RulesCorpus.Adapters.AdapterOutput
+RulesCorpus.Adapters.AdapterOutput.AdapterOutput(System.ReadOnlyMemory<byte> canonical, string! mediaType, RulesCorpus.Adapters.DerivationFidelity fidelity, System.Collections.Generic.IReadOnlyList<string!>! losses, System.Collections.Generic.IReadOnlyList<RulesCorpus.Adapters.AdapterSegment!>! segments) -> void
+RulesCorpus.Adapters.AdapterOutput.Canonical.get -> System.ReadOnlyMemory<byte>
+RulesCorpus.Adapters.AdapterOutput.Fidelity.get -> RulesCorpus.Adapters.DerivationFidelity
+RulesCorpus.Adapters.AdapterOutput.Losses.get -> System.Collections.Generic.IReadOnlyList<string!>!
+RulesCorpus.Adapters.AdapterOutput.MediaType.get -> string!
+RulesCorpus.Adapters.AdapterOutput.Segments.get -> System.Collections.Generic.IReadOnlyList<RulesCorpus.Adapters.AdapterSegment!>!
+RulesCorpus.Adapters.AdapterSegment
+RulesCorpus.Adapters.AdapterSegment.<Clone>$() -> RulesCorpus.Adapters.AdapterSegment!
+RulesCorpus.Adapters.AdapterSegment.AdapterSegment(string! Id, long Start, long Length, string? Locator, System.Collections.Generic.IReadOnlyList<RulesCorpus.Adapters.AdapterSourceSpan!>! Sources) -> void
+RulesCorpus.Adapters.AdapterSegment.Deconstruct(out string! Id, out long Start, out long Length, out string? Locator, out System.Collections.Generic.IReadOnlyList<RulesCorpus.Adapters.AdapterSourceSpan!>! Sources) -> void
+RulesCorpus.Adapters.AdapterSegment.Equals(RulesCorpus.Adapters.AdapterSegment? other) -> bool
+RulesCorpus.Adapters.AdapterSegment.Id.get -> string!
+RulesCorpus.Adapters.AdapterSegment.Id.init -> void
+RulesCorpus.Adapters.AdapterSegment.Length.get -> long
+RulesCorpus.Adapters.AdapterSegment.Length.init -> void
+RulesCorpus.Adapters.AdapterSegment.Locator.get -> string?
+RulesCorpus.Adapters.AdapterSegment.Locator.init -> void
+RulesCorpus.Adapters.AdapterSegment.Sources.get -> System.Collections.Generic.IReadOnlyList<RulesCorpus.Adapters.AdapterSourceSpan!>!
+RulesCorpus.Adapters.AdapterSegment.Sources.init -> void
+RulesCorpus.Adapters.AdapterSegment.Start.get -> long
+RulesCorpus.Adapters.AdapterSegment.Start.init -> void
+RulesCorpus.Adapters.AdapterSourceSpan
+RulesCorpus.Adapters.AdapterSourceSpan.<Clone>$() -> RulesCorpus.Adapters.AdapterSourceSpan!
+RulesCorpus.Adapters.AdapterSourceSpan.AdapterSourceSpan(RulesCorpus.Adapters.PageRange? Pages, RulesCorpus.Adapters.ByteRange? Bytes) -> void
+RulesCorpus.Adapters.AdapterSourceSpan.Bytes.get -> RulesCorpus.Adapters.ByteRange?
+RulesCorpus.Adapters.AdapterSourceSpan.Bytes.init -> void
+RulesCorpus.Adapters.AdapterSourceSpan.Deconstruct(out RulesCorpus.Adapters.PageRange? Pages, out RulesCorpus.Adapters.ByteRange? Bytes) -> void
+RulesCorpus.Adapters.AdapterSourceSpan.Equals(RulesCorpus.Adapters.AdapterSourceSpan? other) -> bool
+RulesCorpus.Adapters.AdapterSourceSpan.Pages.get -> RulesCorpus.Adapters.PageRange?
+RulesCorpus.Adapters.AdapterSourceSpan.Pages.init -> void
+RulesCorpus.Adapters.ByteRange
+RulesCorpus.Adapters.ByteRange.<Clone>$() -> RulesCorpus.Adapters.ByteRange!
+RulesCorpus.Adapters.ByteRange.ByteRange(long Start, long Length) -> void
+RulesCorpus.Adapters.ByteRange.Deconstruct(out long Start, out long Length) -> void
+RulesCorpus.Adapters.ByteRange.Equals(RulesCorpus.Adapters.ByteRange? other) -> bool
+RulesCorpus.Adapters.ByteRange.Length.get -> long
+RulesCorpus.Adapters.ByteRange.Length.init -> void
+RulesCorpus.Adapters.ByteRange.Start.get -> long
+RulesCorpus.Adapters.ByteRange.Start.init -> void
+RulesCorpus.Adapters.CorpusAdapterException
+RulesCorpus.Adapters.CorpusAdapterException.CorpusAdapterException() -> void
+RulesCorpus.Adapters.CorpusAdapterException.CorpusAdapterException(string! message) -> void
+RulesCorpus.Adapters.CorpusAdapterException.CorpusAdapterException(string! message, System.Exception! innerException) -> void
+RulesCorpus.Adapters.DerivationFidelity
+RulesCorpus.Adapters.DerivationFidelity.Lossless = 1 -> RulesCorpus.Adapters.DerivationFidelity
+RulesCorpus.Adapters.DerivationFidelity.LossyTraceable = 2 -> RulesCorpus.Adapters.DerivationFidelity
+RulesCorpus.Adapters.DerivationFidelity.NonReversible = 3 -> RulesCorpus.Adapters.DerivationFidelity
+RulesCorpus.Adapters.ICorpusAdapter
+RulesCorpus.Adapters.ICorpusAdapter.Derive(RulesCorpus.Adapters.AdapterInput! input) -> RulesCorpus.Adapters.AdapterOutput!
+RulesCorpus.Adapters.ICorpusAdapter.Id.get -> string!
+RulesCorpus.Adapters.ICorpusAdapter.IsDeterministic.get -> bool
+RulesCorpus.Adapters.ICorpusAdapter.Version.get -> string!
+RulesCorpus.Adapters.PageRange
+RulesCorpus.Adapters.PageRange.<Clone>$() -> RulesCorpus.Adapters.PageRange!
+RulesCorpus.Adapters.PageRange.Deconstruct(out int From, out int To) -> void
+RulesCorpus.Adapters.PageRange.Equals(RulesCorpus.Adapters.PageRange? other) -> bool
+RulesCorpus.Adapters.PageRange.From.get -> int
+RulesCorpus.Adapters.PageRange.From.init -> void
+RulesCorpus.Adapters.PageRange.PageRange(int From, int To) -> void
+RulesCorpus.Adapters.PageRange.To.get -> int
+RulesCorpus.Adapters.PageRange.To.init -> void
+RulesCorpus.ArtifactAcquisition
+RulesCorpus.ArtifactAcquisition.Notes.get -> string?
+RulesCorpus.ArtifactAcquisition.Origin.get -> string!
+RulesCorpus.ArtifactAcquisition.Retrieved.get -> System.DateOnly?
+RulesCorpus.ArtifactRole
+RulesCorpus.ArtifactRole.Derived = 2 -> RulesCorpus.ArtifactRole
+RulesCorpus.ArtifactRole.Source = 1 -> RulesCorpus.ArtifactRole
+RulesCorpus.ContentDigest
+RulesCorpus.ContentDigest.Equals(RulesCorpus.ContentDigest? other) -> bool
+RulesCorpus.ContentDigest.Hex.get -> string!
+RulesCorpus.CorpusBuilder
+RulesCorpus.CorpusError
+RulesCorpus.CorpusError.Path.get -> string!
+RulesCorpus.CorpusError.Reason.get -> string!
+RulesCorpus.CorpusException
+RulesCorpus.CorpusException.CorpusException() -> void
+RulesCorpus.CorpusException.CorpusException(string! message) -> void
+RulesCorpus.CorpusException.CorpusException(string! message, System.Exception! innerException) -> void
+RulesCorpus.CorpusException.Errors.get -> System.Collections.Generic.IReadOnlyList<RulesCorpus.CorpusError!>!
+RulesCorpus.CorpusFiles
+RulesCorpus.CorpusLimits
+RulesCorpus.CorpusLimits.<Clone>$() -> RulesCorpus.CorpusLimits!
+RulesCorpus.CorpusLimits.CorpusLimits() -> void
+RulesCorpus.CorpusLimits.Equals(RulesCorpus.CorpusLimits? other) -> bool
+RulesCorpus.CorpusLimits.MaxArtifactBytes.get -> long
+RulesCorpus.CorpusLimits.MaxArtifactBytes.init -> void
+RulesCorpus.CorpusLimits.MaxManifestBytes.get -> long
+RulesCorpus.CorpusLimits.MaxManifestBytes.init -> void
+RulesCorpus.CorpusLimits.MaxSegments.get -> int
+RulesCorpus.CorpusLimits.MaxSegments.init -> void
+RulesCorpus.CorpusManifest
+RulesCorpus.CorpusManifest.Artifacts.get -> System.Collections.Generic.IReadOnlyList<RulesCorpus.ManifestArtifact!>!
+RulesCorpus.CorpusManifest.Baselines.get -> System.Collections.Generic.IReadOnlyList<RulesCorpus.ManifestBaseline!>!
+RulesCorpus.CorpusManifest.BuildDigest.get -> RulesCorpus.ContentDigest!
+RulesCorpus.CorpusManifest.ContentDigest.get -> RulesCorpus.ContentDigest!
+RulesCorpus.CorpusManifest.CorpusId.get -> string!
+RulesCorpus.CorpusManifest.Derivations.get -> System.Collections.Generic.IReadOnlyList<RulesCorpus.ManifestDerivation!>!
+RulesCorpus.CorpusManifest.ManifestDigest.get -> RulesCorpus.ContentDigest!
+RulesCorpus.CorpusManifest.Segments.get -> System.Collections.Generic.IReadOnlyList<RulesCorpus.ManifestSegment!>!
+RulesCorpus.CorpusManifest.ToUtf8Json() -> byte[]!
+RulesCorpus.CorpusPacker
+RulesCorpus.CorpusVerifier
+RulesCorpus.DerivationReproducibility
+RulesCorpus.DerivationReproducibility.External = 2 -> RulesCorpus.DerivationReproducibility
+RulesCorpus.DerivationReproducibility.Reproducible = 1 -> RulesCorpus.DerivationReproducibility
+RulesCorpus.DerivationTool
+RulesCorpus.DerivationTool.Id.get -> string!
+RulesCorpus.DerivationTool.Version.get -> string!
+RulesCorpus.ManifestArtifact
+RulesCorpus.ManifestArtifact.Acquisition.get -> RulesCorpus.ArtifactAcquisition?
+RulesCorpus.ManifestArtifact.Bytes.get -> long
+RulesCorpus.ManifestArtifact.DerivedBy.get -> string?
+RulesCorpus.ManifestArtifact.Digest.get -> RulesCorpus.ContentDigest!
+RulesCorpus.ManifestArtifact.Id.get -> string!
+RulesCorpus.ManifestArtifact.MediaType.get -> string!
+RulesCorpus.ManifestArtifact.Path.get -> string?
+RulesCorpus.ManifestArtifact.Role.get -> RulesCorpus.ArtifactRole
+RulesCorpus.ManifestArtifact.Stored.get -> bool
+RulesCorpus.ManifestBaseline
+RulesCorpus.ManifestBaseline.Artifact.get -> string!
+RulesCorpus.ManifestBaseline.AsOf.get -> System.DateOnly?
+RulesCorpus.ManifestBaseline.HashDerivation.get -> string!
+RulesCorpus.ManifestBaseline.SourceId.get -> string!
+RulesCorpus.ManifestChange<T>
+RulesCorpus.ManifestChange<T>.After.get -> T!
+RulesCorpus.ManifestChange<T>.Before.get -> T!
+RulesCorpus.ManifestDerivation
+RulesCorpus.ManifestDerivation.Fidelity.get -> RulesCorpus.Adapters.DerivationFidelity
+RulesCorpus.ManifestDerivation.Id.get -> string!
+RulesCorpus.ManifestDerivation.Inputs.get -> System.Collections.Generic.IReadOnlyList<string!>!
+RulesCorpus.ManifestDerivation.Losses.get -> System.Collections.Generic.IReadOnlyList<string!>!
+RulesCorpus.ManifestDerivation.Output.get -> string!
+RulesCorpus.ManifestDerivation.Parameters.get -> System.Collections.Generic.IReadOnlyDictionary<string!, string!>!
+RulesCorpus.ManifestDerivation.Reproducibility.get -> RulesCorpus.DerivationReproducibility
+RulesCorpus.ManifestDerivation.Tool.get -> RulesCorpus.DerivationTool!
+RulesCorpus.ManifestDiff
+RulesCorpus.ManifestDiff.ArtifactsAdded.get -> System.Collections.Generic.IReadOnlyList<RulesCorpus.ManifestArtifact!>!
+RulesCorpus.ManifestDiff.ArtifactsChanged.get -> System.Collections.Generic.IReadOnlyList<RulesCorpus.ManifestChange<RulesCorpus.ManifestArtifact!>!>!
+RulesCorpus.ManifestDiff.ArtifactsRemoved.get -> System.Collections.Generic.IReadOnlyList<RulesCorpus.ManifestArtifact!>!
+RulesCorpus.ManifestDiff.BaselinesAdded.get -> System.Collections.Generic.IReadOnlyList<RulesCorpus.ManifestBaseline!>!
+RulesCorpus.ManifestDiff.BaselinesChanged.get -> System.Collections.Generic.IReadOnlyList<RulesCorpus.ManifestChange<RulesCorpus.ManifestBaseline!>!>!
+RulesCorpus.ManifestDiff.BaselinesRemoved.get -> System.Collections.Generic.IReadOnlyList<RulesCorpus.ManifestBaseline!>!
+RulesCorpus.ManifestDiff.ContentDigestEqual.get -> bool
+RulesCorpus.ManifestDiff.DerivationsAdded.get -> System.Collections.Generic.IReadOnlyList<RulesCorpus.ManifestDerivation!>!
+RulesCorpus.ManifestDiff.DerivationsChanged.get -> System.Collections.Generic.IReadOnlyList<RulesCorpus.ManifestChange<RulesCorpus.ManifestDerivation!>!>!
+RulesCorpus.ManifestDiff.DerivationsRemoved.get -> System.Collections.Generic.IReadOnlyList<RulesCorpus.ManifestDerivation!>!
+RulesCorpus.ManifestDiff.ManifestDigestEqual.get -> bool
+RulesCorpus.ManifestDiff.SegmentsAdded.get -> System.Collections.Generic.IReadOnlyList<RulesCorpus.ManifestSegment!>!
+RulesCorpus.ManifestDiff.SegmentsChanged.get -> System.Collections.Generic.IReadOnlyList<RulesCorpus.ManifestChange<RulesCorpus.ManifestSegment!>!>!
+RulesCorpus.ManifestDiff.SegmentsRemoved.get -> System.Collections.Generic.IReadOnlyList<RulesCorpus.ManifestSegment!>!
+RulesCorpus.ManifestSegment
+RulesCorpus.ManifestSegment.Artifact.get -> string!
+RulesCorpus.ManifestSegment.Digest.get -> RulesCorpus.ContentDigest!
+RulesCorpus.ManifestSegment.Id.get -> string!
+RulesCorpus.ManifestSegment.Length.get -> long
+RulesCorpus.ManifestSegment.Locator.get -> string?
+RulesCorpus.ManifestSegment.Sources.get -> System.Collections.Generic.IReadOnlyList<RulesCorpus.ManifestSourceSpan!>!
+RulesCorpus.ManifestSegment.Start.get -> long
+RulesCorpus.ManifestSourceSpan
+RulesCorpus.ManifestSourceSpan.Artifact.get -> string!
+RulesCorpus.ManifestSourceSpan.Bytes.get -> RulesCorpus.Adapters.ByteRange?
+RulesCorpus.ManifestSourceSpan.Pages.get -> RulesCorpus.Adapters.PageRange?
+RulesCorpus.VerificationCheck
+RulesCorpus.VerificationCheck.Detail.get -> string!
+RulesCorpus.VerificationCheck.Name.get -> string!
+RulesCorpus.VerificationCheck.Outcome.get -> RulesCorpus.VerificationOutcome
+RulesCorpus.VerificationOptions
+RulesCorpus.VerificationOptions.Adapters.get -> System.Collections.Generic.IReadOnlyList<RulesCorpus.Adapters.ICorpusAdapter!>!
+RulesCorpus.VerificationOptions.Adapters.init -> void
+RulesCorpus.VerificationOptions.Limits.get -> RulesCorpus.CorpusLimits!
+RulesCorpus.VerificationOptions.Limits.init -> void
+RulesCorpus.VerificationOptions.Rebuild.get -> bool
+RulesCorpus.VerificationOptions.Rebuild.init -> void
+RulesCorpus.VerificationOptions.VerificationOptions() -> void
+RulesCorpus.VerificationOutcome
+RulesCorpus.VerificationOutcome.Failed = 3 -> RulesCorpus.VerificationOutcome
+RulesCorpus.VerificationOutcome.NotVerified = 2 -> RulesCorpus.VerificationOutcome
+RulesCorpus.VerificationOutcome.Ok = 1 -> RulesCorpus.VerificationOutcome
+RulesCorpus.VerificationReport
+RulesCorpus.VerificationReport.Checks.get -> System.Collections.Generic.IReadOnlyList<RulesCorpus.VerificationCheck!>!
+RulesCorpus.VerificationReport.Outcome.get -> RulesCorpus.VerificationOutcome
+override RulesCorpus.Adapters.AdapterSegment.Equals(object? obj) -> bool
+override RulesCorpus.Adapters.AdapterSegment.GetHashCode() -> int
+override RulesCorpus.Adapters.AdapterSegment.ToString() -> string!
+override RulesCorpus.Adapters.AdapterSourceSpan.Equals(object? obj) -> bool
+override RulesCorpus.Adapters.AdapterSourceSpan.GetHashCode() -> int
+override RulesCorpus.Adapters.AdapterSourceSpan.ToString() -> string!
+override RulesCorpus.Adapters.ByteRange.Equals(object? obj) -> bool
+override RulesCorpus.Adapters.ByteRange.GetHashCode() -> int
+override RulesCorpus.Adapters.ByteRange.ToString() -> string!
+override RulesCorpus.Adapters.PageRange.Equals(object? obj) -> bool
+override RulesCorpus.Adapters.PageRange.GetHashCode() -> int
+override RulesCorpus.Adapters.PageRange.ToString() -> string!
+override RulesCorpus.ContentDigest.Equals(object? obj) -> bool
+override RulesCorpus.ContentDigest.GetHashCode() -> int
+override RulesCorpus.ContentDigest.ToString() -> string!
+override RulesCorpus.CorpusError.ToString() -> string!
+override RulesCorpus.CorpusLimits.Equals(object? obj) -> bool
+override RulesCorpus.CorpusLimits.GetHashCode() -> int
+override RulesCorpus.CorpusLimits.ToString() -> string!
+override RulesCorpus.VerificationCheck.ToString() -> string!
+static RulesCorpus.Adapters.AdapterSegment.operator !=(RulesCorpus.Adapters.AdapterSegment? left, RulesCorpus.Adapters.AdapterSegment? right) -> bool
+static RulesCorpus.Adapters.AdapterSegment.operator ==(RulesCorpus.Adapters.AdapterSegment? left, RulesCorpus.Adapters.AdapterSegment? right) -> bool
+static RulesCorpus.Adapters.AdapterSourceSpan.operator !=(RulesCorpus.Adapters.AdapterSourceSpan? left, RulesCorpus.Adapters.AdapterSourceSpan? right) -> bool
+static RulesCorpus.Adapters.AdapterSourceSpan.operator ==(RulesCorpus.Adapters.AdapterSourceSpan? left, RulesCorpus.Adapters.AdapterSourceSpan? right) -> bool
+static RulesCorpus.Adapters.ByteRange.operator !=(RulesCorpus.Adapters.ByteRange? left, RulesCorpus.Adapters.ByteRange? right) -> bool
+static RulesCorpus.Adapters.ByteRange.operator ==(RulesCorpus.Adapters.ByteRange? left, RulesCorpus.Adapters.ByteRange? right) -> bool
+static RulesCorpus.Adapters.PageRange.operator !=(RulesCorpus.Adapters.PageRange? left, RulesCorpus.Adapters.PageRange? right) -> bool
+static RulesCorpus.Adapters.PageRange.operator ==(RulesCorpus.Adapters.PageRange? left, RulesCorpus.Adapters.PageRange? right) -> bool
+static RulesCorpus.ContentDigest.Compute(System.ReadOnlySpan<byte> bytes) -> RulesCorpus.ContentDigest!
+static RulesCorpus.ContentDigest.Parse(string! value) -> RulesCorpus.ContentDigest!
+static RulesCorpus.ContentDigest.TryParse(string? value, out RulesCorpus.ContentDigest? digest) -> bool
+static RulesCorpus.ContentDigest.operator !=(RulesCorpus.ContentDigest? left, RulesCorpus.ContentDigest? right) -> bool
+static RulesCorpus.ContentDigest.operator ==(RulesCorpus.ContentDigest? left, RulesCorpus.ContentDigest? right) -> bool
+static RulesCorpus.CorpusBuilder.Build(string! corpusDirectory, System.Collections.Generic.IEnumerable<RulesCorpus.Adapters.ICorpusAdapter!>! adapters, RulesCorpus.CorpusLimits? limits = null) -> RulesCorpus.CorpusManifest!
+static RulesCorpus.CorpusFiles.FromDirectory(string! directory) -> RulesCorpus.CorpusFiles!
+static RulesCorpus.CorpusFiles.FromPacked(System.IO.Stream! packed, RulesCorpus.CorpusLimits? limits = null) -> RulesCorpus.CorpusFiles!
+static RulesCorpus.CorpusLimits.Default.get -> RulesCorpus.CorpusLimits!
+static RulesCorpus.CorpusLimits.operator !=(RulesCorpus.CorpusLimits? left, RulesCorpus.CorpusLimits? right) -> bool
+static RulesCorpus.CorpusLimits.operator ==(RulesCorpus.CorpusLimits? left, RulesCorpus.CorpusLimits? right) -> bool
+static RulesCorpus.CorpusManifest.Load(RulesCorpus.CorpusFiles! corpus, RulesCorpus.CorpusLimits? limits = null) -> RulesCorpus.CorpusManifest!
+static RulesCorpus.CorpusManifest.Parse(System.ReadOnlySpan<byte> utf8, RulesCorpus.CorpusLimits? limits = null) -> RulesCorpus.CorpusManifest!
+static RulesCorpus.CorpusPacker.Pack(string! corpusDirectory, System.IO.Stream! destination, RulesCorpus.VerificationOptions? options = null, bool allowNotVerified = false) -> RulesCorpus.VerificationReport!
+static RulesCorpus.CorpusVerifier.Verify(RulesCorpus.CorpusFiles! corpus, RulesCorpus.VerificationOptions? options = null) -> RulesCorpus.VerificationReport!
+static RulesCorpus.ManifestDiff.Compare(RulesCorpus.CorpusManifest! before, RulesCorpus.CorpusManifest! after) -> RulesCorpus.ManifestDiff!

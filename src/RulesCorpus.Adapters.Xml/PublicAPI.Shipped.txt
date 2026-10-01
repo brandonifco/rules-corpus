@@ -1,0 +1,7 @@
+#nullable enable
+RulesCorpus.Adapters.Xml.XmlAdapter
+RulesCorpus.Adapters.Xml.XmlAdapter.Derive(RulesCorpus.Adapters.AdapterInput! input) -> RulesCorpus.Adapters.AdapterOutput!
+RulesCorpus.Adapters.Xml.XmlAdapter.Id.get -> string!
+RulesCorpus.Adapters.Xml.XmlAdapter.IsDeterministic.get -> bool
+RulesCorpus.Adapters.Xml.XmlAdapter.Version.get -> string!
+RulesCorpus.Adapters.Xml.XmlAdapter.XmlAdapter() -> void

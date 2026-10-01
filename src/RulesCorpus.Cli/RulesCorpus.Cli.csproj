@@ -22,6 +22,7 @@
   <ItemGroup>
     <ProjectReference Include="../RulesCorpus/RulesCorpus.csproj" />
     <ProjectReference Include="../RulesCorpus.Adapters.Text/RulesCorpus.Adapters.Text.csproj" />
+    <ProjectReference Include="../RulesCorpus.Adapters.Xml/RulesCorpus.Adapters.Xml.csproj" />
   </ItemGroup>
 
 </Project>

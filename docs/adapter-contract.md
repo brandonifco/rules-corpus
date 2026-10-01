@@ -120,3 +120,47 @@ tables built into the .NET runtime, which can differ between runtime versions. S
 parameters give the same output on one runtime; across runtimes that holds only for patterns
 that avoid those constructs. Write ASCII classes (`[0-9]`, `[A-Za-z]`) in patterns a corpus
 depends on.
+
+## The xml adapter (`xml`, version 1)
+
+Package `RulesCorpus.Adapters.Xml`. Input: a UTF-8 XML document. Output media type
+`application/xml`.
+
+### Canonicalization
+
+None. The canonical artifact is the input, byte for byte, so the derivation is `lossless` and
+a segment's source span is the same byte range as its span of the canonical artifact. The
+adapter reads the document and refuses what it cannot read the same way twice:
+
+- invalid UTF-8, a byte-order mark, or any carriage return (LF line endings only);
+- an XML declaration naming an encoding other than UTF-8;
+- a document that is not well-formed, with the line and position of the first error (the
+  parser's own message is localized and is never reproduced);
+- a `DOCTYPE`, so no entity or external content is ever read.
+
+### Segmentation
+
+Two parameters, both required, and no others:
+
+- `segmentElement`: an XML name. Every element with exactly that name, as written in the
+  document (a prefix is part of the name), is one segment.
+- `idAttribute`: an XML name. The value of that attribute on the matching element is the
+  segment's id.
+
+A segment is the element from the `<` of its start tag through the `>` of its end tag, so its
+bytes are a well-formed XML fragment. Segments are in document order. There is no locator and
+no `pages`; each source span is `bytes`.
+
+Refusals: a matching element with no id attribute, a repeated id, an id outside the format's
+grammar (the core's check), a matching element inside another, a self-closed matching element
+(it has no content), no matching element at all, and more segments than `MaxSegments`.
+
+The adapter is not a query language and does not interpret element or attribute names; which
+element is a "section" is the build definition's business.
+
+### A limit on the determinism claim
+
+Positions come from the .NET runtime's XML reader, counted in UTF-16 code units from the start
+of each line. They are converted to byte offsets by the adapter and validated by the core
+(bounds, UTF-8 boundaries, digests), and the tests assert them against multi-byte, tab and
+astral text, so a runtime that counted differently fails the gate rather than shifting spans.

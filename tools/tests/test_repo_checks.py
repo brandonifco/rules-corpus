@@ -112,9 +112,12 @@ public static class Digest
 PROJECTS: dict[str, tuple[str, list[str]]] = {
     "src/RulesCorpus": ("library", []),
     "src/RulesCorpus.Adapters.Text": ("library", ["src/RulesCorpus"]),
-    "src/RulesCorpus.Cli": ("tool", ["src/RulesCorpus", "src/RulesCorpus.Adapters.Text"]),
+    "src/RulesCorpus.Adapters.Xml": ("library", ["src/RulesCorpus"]),
+    "src/RulesCorpus.Cli": ("tool", ["src/RulesCorpus", "src/RulesCorpus.Adapters.Text",
+                                     "src/RulesCorpus.Adapters.Xml"]),
     "tests/RulesCorpus.Tests": ("test", ["src/RulesCorpus"]),
     "tests/RulesCorpus.Adapters.Text.Tests": ("test", ["src/RulesCorpus", "src/RulesCorpus.Adapters.Text"]),
+    "tests/RulesCorpus.Adapters.Xml.Tests": ("test", ["src/RulesCorpus", "src/RulesCorpus.Adapters.Xml"]),
     "tests/RulesCorpus.Cli.Tests": ("test", ["src/RulesCorpus.Cli"]),
 }
 
@@ -325,8 +328,8 @@ class LayeringTests(CheckTestCase):
         self.assertPasses()
 
     def test_undeclared_project_fails(self) -> None:
-        self.repo.write_project("src/RulesCorpus.Adapters.Xml", "library", ["src/RulesCorpus"])
-        self.assertFailsWith("src/RulesCorpus.Adapters.Xml/RulesCorpus.Adapters.Xml.csproj",
+        self.repo.write_project("src/RulesCorpus.Adapters.Html", "library", ["src/RulesCorpus"])
+        self.assertFailsWith("src/RulesCorpus.Adapters.Html/RulesCorpus.Adapters.Html.csproj",
                              "not declared in ALLOWED_PROJECT_REFS")
 
     def test_declared_project_whose_csproj_was_deleted_fails_though_its_directory_remains(self) -> None:
@@ -487,7 +490,7 @@ class DeterminismTests(CheckTestCase):
         self.assertPasses()
 
     def test_each_banned_api_fails_in_the_core_and_the_adapter(self) -> None:
-        for scope in ("src/RulesCorpus", "src/RulesCorpus.Adapters.Text"):
+        for scope in ("src/RulesCorpus", "src/RulesCorpus.Adapters.Text", "src/RulesCorpus.Adapters.Xml"):
             for line in self.BANNED_IN_CORE:
                 with self.subTest(scope=scope, line=line):
                     path = self.repo.write(f"{scope}/Bad.cs", f"namespace X;\n{line}\n")
@@ -642,9 +645,9 @@ class DocReferenceTests(CheckTestCase):
 class PublicApiTests(CheckTestCase):
     check = "public-api"
 
-    def test_clean_tree_passes_and_examines_the_two_libraries(self) -> None:
+    def test_clean_tree_passes_and_examines_the_three_libraries(self) -> None:
         self.assertPasses()
-        self.assertEqual(2, self.repo.examined)
+        self.assertEqual(3, self.repo.examined)
 
     def test_missing_unshipped_baseline_fails(self) -> None:
         (self.repo.root / "src/RulesCorpus.Adapters.Text/PublicAPI.Unshipped.txt").unlink()

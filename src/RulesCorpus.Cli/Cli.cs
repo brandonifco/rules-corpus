@@ -30,7 +30,7 @@ internal static class Cli
               corpus.build.json as a stored source. No --retrieved, no retrieved date: the
               clock is never read. Refuses an existing file, path or id.
           build [--dir <corpus>]
-              Build the corpus (default: the current directory) with the text adapter.
+              Build the corpus (default: the current directory) with its text and xml adapters.
           verify [<corpus dir or .tar>] [--rebuild]
                  [--allow-not-verified | --expect-not-verified <check>[,<check>...]]
               Verify a corpus and print every check. --rebuild re-runs every reproducible

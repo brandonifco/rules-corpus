@@ -1,5 +1,6 @@
 using RulesCorpus.Adapters;
 using RulesCorpus.Adapters.Text;
+using RulesCorpus.Adapters.Xml;
 using RulesCorpus.Files;
 using RulesCorpus.Internal;
 using RulesCorpus.Json;
@@ -38,7 +39,7 @@ internal static class Commands
     };
 
     /// <summary>The adapters this tool ships, for build and rebuild.</summary>
-    private static ICorpusAdapter[] Adapters => [new TextAdapter()];
+    private static ICorpusAdapter[] Adapters => [new TextAdapter(), new XmlAdapter()];
 
     public static int Init(Context context, IReadOnlyList<string> tokens)
     {

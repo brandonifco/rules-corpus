@@ -1,6 +1,6 @@
 # Sample corpora
 
-Two corpora built with the `rules-corpus` CLI and committed with their outputs, so the
+Three corpora built with the `rules-corpus` CLI and committed with their outputs, so the
 example in the [README](../README.md) is real. Each directory holds the hand-written
 `corpus.build.json`, the stored sources under `sources/`, and what `rules-corpus build` wrote:
 the canonical text under `canonical/` and the manifest `corpus.json`.
@@ -32,6 +32,22 @@ part heading and sections 107.1, 107.2, 107.9, 107.11 and 107.12), taken from th
   `ecfr-versioner-xml-plain-text-excerpt-107.1-107.12` and `asOf` 2026-01-01.
 
 `rules-corpus verify samples/regulatory --rebuild` reports every check ok and exits 0.
+
+## regulatory-xml: the same part, as XML, segmented by the `xml` adapter
+
+[regulatory-xml/](regulatory-xml/) is the part heading, the Subpart A heading and sections
+107.1 and 107.2 of 14 CFR part 107, cut from the eCFR versioner XML as of 2026-01-01 with the
+elements unchanged. A work of the United States Government, in the public domain.
+
+- One acquired source, `cfr-14-107-xml`, and one `xml` adapter derivation with `segmentElement`
+  `DIV8` and `idAttribute` `N`: two segments, `107.1` and `107.2`, each one `DIV8` element from
+  its start tag to its end tag. The canonical artifact is the source's bytes, so the derivation
+  is lossless and a segment's source span is the same byte range as its span of the canonical
+  artifact.
+- The same derivation over the whole part, 61 sections, is the M5 calibration
+  ([record](../docs/calibration/2026-10-01-m5-xml.md)).
+
+`rules-corpus verify samples/regulatory-xml --rebuild` reports every check ok and exits 0.
 
 ## rulebook: an unstored original, verifies as not verified
 
