@@ -30,8 +30,8 @@
     <Product>Rules Corpus</Product>
     <RepositoryUrl>https://github.com/brandonifco/rules-corpus</RepositoryUrl>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
-    <VersionPrefix>1.1.0</VersionPrefix>
-    <VersionSuffix></VersionSuffix>
+    <VersionPrefix>1.1.1</VersionPrefix>
+    <VersionSuffix>dev</VersionSuffix>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
