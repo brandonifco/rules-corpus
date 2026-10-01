@@ -2,11 +2,13 @@
   <Folder Name="/src/">
     <Project Path="src/RulesCorpus/RulesCorpus.csproj" />
     <Project Path="src/RulesCorpus.Adapters.Text/RulesCorpus.Adapters.Text.csproj" />
+    <Project Path="src/RulesCorpus.Adapters.Xml/RulesCorpus.Adapters.Xml.csproj" />
     <Project Path="src/RulesCorpus.Cli/RulesCorpus.Cli.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/RulesCorpus.Tests/RulesCorpus.Tests.csproj" />
     <Project Path="tests/RulesCorpus.Adapters.Text.Tests/RulesCorpus.Adapters.Text.Tests.csproj" />
+    <Project Path="tests/RulesCorpus.Adapters.Xml.Tests/RulesCorpus.Adapters.Xml.Tests.csproj" />
     <Project Path="tests/RulesCorpus.Cli.Tests/RulesCorpus.Cli.Tests.csproj" />
   </Folder>
 </Solution>

@@ -5,7 +5,7 @@ rules-corpus reproducibly produces and verifies a portable, immutable, addressab
 content identity, derivation history and source mappings are explicit, without containing or
 interpreting any domain rules.
 
-**Status:** pre-1.0. Milestones M0–M3 of the
+**Status:** pre-1.0. Milestones M0–M5 of the
 [plan](docs/rules-corpus-design-and-development-plan.docx) are done; M4's identity
 calibration against both consumers is [recorded](docs/calibration/2026-09-30-m4-identities.md);
 the rest of M4 onward is in the [backlog](docs/backlog.md).
@@ -42,10 +42,11 @@ failed. A consumer names the checks it accepts as not verified with
 `--expect-not-verified` ([decision 0008](docs/decisions/0008-consumers-pin-the-checks-they-accept-as-not-verified.md));
 `--allow-not-verified` accepts any. `rules-corpus --help` has the details.
 
-Two worked examples are committed in [samples/](samples/README.md), with their built outputs:
-a regulatory excerpt segmented by section headings, and a rulebook excerpt whose source PDF is
+Three worked examples are committed in [samples/](samples/README.md), with their built outputs:
+a regulatory excerpt segmented by section headings, the same part as XML segmented by its
+section elements, and a rulebook excerpt whose source PDF is
 declared but not stored, so it verifies as not verified. `tools/sample-corpus/check.sh` rebuilds
-both from their sources through the CLI and fails if a single byte differs from what is
+all three from their sources through the CLI and fails if a single byte differs from what is
 committed; the gate runs it.
 
 ## Validate

@@ -1,0 +1,90 @@
+{
+  "artifacts": [
+    {
+      "acquisition": {
+        "notes": "The part heading, the Subpart A heading and 14 CFR 107.1 and 107.2, cut from the eCFR versioner XML of 14 CFR part 107 as of 2026-01-01 served at the origin: the elements are unchanged and the rest of the part is removed. A work of the United States Government, in the public domain. No retrieval date is recorded because none was kept when the excerpt was made.",
+        "origin": "https://www.ecfr.gov/api/versioner/v1/full/2026-01-01/title-14.xml?part=107"
+      },
+      "bytes": 2850,
+      "digest": "sha256:0d03dd33bbad9bf9357efa70bf9ec0a16a18238dd3e6349e6d6ab4d12483adf5",
+      "id": "cfr-14-107-xml",
+      "mediaType": "application/xml",
+      "path": "sources/14-cfr-107-excerpt.xml",
+      "role": "source",
+      "stored": true
+    },
+    {
+      "bytes": 2850,
+      "derivedBy": "cfr-14-107-sections",
+      "digest": "sha256:0d03dd33bbad9bf9357efa70bf9ec0a16a18238dd3e6349e6d6ab4d12483adf5",
+      "id": "cfr-14-107-canonical",
+      "mediaType": "application/xml",
+      "path": "canonical/14-cfr-107-excerpt.xml",
+      "role": "derived",
+      "stored": true
+    }
+  ],
+  "baselines": [
+    {
+      "artifact": "cfr-14-107-xml",
+      "asOf": "2026-01-01",
+      "hashDerivation": "ecfr-versioner-xml-excerpt-107.1-107.2",
+      "sourceId": "cfr-14-107-xml-excerpt"
+    }
+  ],
+  "buildDigest": "sha256:de92e5c796c98ec98a5322e65d254a19113b53157b64cfed1565e5aedd7e04ea",
+  "contentDigest": "sha256:c8cd33ec55b93f3a8c915f0f3223534922c01d4ea248fcbaaf951db99bb6b858",
+  "corpusId": "cfr-14-107-xml-excerpt",
+  "derivations": [
+    {
+      "fidelity": "lossless",
+      "id": "cfr-14-107-sections",
+      "inputs": [
+        "cfr-14-107-xml"
+      ],
+      "losses": [],
+      "output": "cfr-14-107-canonical",
+      "parameters": {
+        "idAttribute": "N",
+        "segmentElement": "DIV8"
+      },
+      "reproducibility": "reproducible",
+      "tool": {
+        "id": "xml",
+        "version": "1"
+      }
+    }
+  ],
+  "manifestDigest": "sha256:92b70d5a9dbd18e21429787e834a429bf8f02ab14c7a57cfcbfa263a4cb58d0c",
+  "schema": "rules-corpus/manifest/1",
+  "segments": [
+    {
+      "artifact": "cfr-14-107-canonical",
+      "digest": "sha256:a1136d407b582d359a763766eb593ef2fc578d0ed57ae8c19fcc1ba06cbae335",
+      "id": "107.1",
+      "length": 1224,
+      "sources": [
+        {
+          "artifact": "cfr-14-107-xml",
+          "length": 1224,
+          "start": 981
+        }
+      ],
+      "start": 981
+    },
+    {
+      "artifact": "cfr-14-107-canonical",
+      "digest": "sha256:1dc48239d85874779141416cdafb1bfab474b6e865b705b68f62d1ec607b5683",
+      "id": "107.2",
+      "length": 625,
+      "sources": [
+        {
+          "artifact": "cfr-14-107-xml",
+          "length": 625,
+          "start": 2207
+        }
+      ],
+      "start": 2207
+    }
+  ]
+}

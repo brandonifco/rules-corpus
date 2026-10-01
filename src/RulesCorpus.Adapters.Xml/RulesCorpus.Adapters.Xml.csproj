@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Multi-targeted so a net8.0 engine can reference it without upgrading first; rules-kernel
+       made the same commitment for the same reason. -->
+  <PropertyGroup>
+    <TargetFrameworks>net8.0;net10.0</TargetFrameworks>
+    <TargetFramework />
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <RootNamespace>RulesCorpus.Adapters.Xml</RootNamespace>
+    <PackageId>RulesCorpus.Adapters.Xml</PackageId>
+    <Description>Deterministic XML element segmentation for RulesCorpus.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../RulesCorpus/RulesCorpus.csproj" />
+  </ItemGroup>
+
+  <!-- Referenced, not copied: an undeclared public-surface change fails the build against
+       PublicAPI.Shipped.txt / PublicAPI.Unshipped.txt. -->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" PrivateAssets="all" />
+  </ItemGroup>
+
+</Project>

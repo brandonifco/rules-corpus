@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<DIV5 N="107" TYPE="PART" VOLUME="2" hierarchy_metadata="{&amp;quot;path&amp;quot;:&amp;quot;/on/_SUBSTITUTE_DATE_/title-14/part-107&amp;quot;,&amp;quot;citation&amp;quot;:&amp;quot;14 CFR Part 107&amp;quot;,&amp;quot;alternate_reference&amp;quot;:&amp;quot;FAR Part 107&amp;quot;}">
+<HEAD>PART 107&#x2014;SMALL UNMANNED AIRCRAFT SYSTEMS
+</HEAD>
+<AUTH>
+<HED>Authority:</HED><PSPACE>49 U.S.C. 106(f), 40101 note, 40103(b), 44701(a)(5), 46105(c), 46110, 44807.
+</PSPACE></AUTH>
+<SOURCE>
+<HED>Source:</HED><PSPACE>Docket FAA-2015-0150, Amdt. 107-1, 81 FR 42209, June 28, 2016, unless otherwise noted.
+</PSPACE></SOURCE>
+<DIV6 N="A" TYPE="SUBPART" hierarchy_metadata="{&amp;quot;path&amp;quot;:&amp;quot;/on/_SUBSTITUTE_DATE_/title-14/part-107/subpart-A&amp;quot;,&amp;quot;citation&amp;quot;:&amp;quot;14 CFR Part 107 Subpart A&amp;quot;,&amp;quot;alternate_reference&amp;quot;:&amp;quot;FAR Part 107 Subpart A&amp;quot;}">
+<HEAD>Subpart A&#x2014;General</HEAD>
+<DIV8 N="107.1" TYPE="SECTION" hierarchy_metadata="{&quot;path&quot;:&quot;/on/_SUBSTITUTE_DATE_/title-14/section-107.1&quot;,&quot;citation&quot;:&quot;14 CFR 107.1&quot;,&quot;alternate_reference&quot;:&quot;FAR 107.1&quot;}">
+<HEAD>&#xA7; 107.1 Applicability.</HEAD>
+<P>(a) Except as provided in paragraph (b) of this section, this part applies to the registration, airman certification, and operation of civil small unmanned aircraft systems within the United States. This part also applies to the eligibility of civil small unmanned aircraft systems to operate over human beings in the United States.</P>
+<P>(b) This part does not apply to the following:</P>
+<P>(1) Air carrier operations;</P>
+<P>(2) Any aircraft subject to the provisions of 49 U.S.C. 44809;</P>
+<P>(3) Any operation that the holder of an exemption under section 333 of Public Law 112-95 or 49 U.S.C. 44807 elects to conduct pursuant to the exemption, unless otherwise specified in the exemption; or</P>
+<P>(4) Any operation that a person elects to conduct under part 91 of this chapter with a small unmanned aircraft system that has been issued an airworthiness certificate.</P>
+<CITA TYPE="N">[Amdt. 107-8, 86 FR 4381, Jan. 15, 2021]
+</CITA>
+</DIV8>
+
+<DIV8 N="107.2" TYPE="SECTION" hierarchy_metadata="{&quot;path&quot;:&quot;/on/_SUBSTITUTE_DATE_/title-14/section-107.2&quot;,&quot;citation&quot;:&quot;14 CFR 107.2&quot;,&quot;alternate_reference&quot;:&quot;FAR 107.2&quot;}">
+<HEAD>&#xA7; 107.2 Applicability of certification procedures for products and articles.</HEAD>
+<P>The provisions of part 21 of this chapter do not apply to small unmanned aircraft systems operated under this part unless the small unmanned aircraft system will operate over human beings in accordance with &#xA7; 107.140.</P>
+<CITA TYPE="N">[Amdt. 107-8, 86 FR 4381, Jan. 15, 2021]
+</CITA>
+</DIV8>
+
+</DIV6>
+</DIV5>

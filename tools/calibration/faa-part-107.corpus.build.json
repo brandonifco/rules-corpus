@@ -8,14 +8,28 @@
     }
   ],
   "corpusId": "cfr-14-107",
-  "derivations": [],
+  "derivations": [
+    {
+      "adapter": "xml",
+      "id": "cfr-14-107-sections",
+      "input": "cfr-14-107-xml",
+      "output": {
+        "id": "cfr-14-107-sections-xml",
+        "path": "canonical/part107.xml"
+      },
+      "parameters": {
+        "idAttribute": "N",
+        "segmentElement": "DIV8"
+      }
+    }
+  ],
   "external": [],
   "schema": "rules-corpus/build/1",
   "sources": [
     {
       "id": "cfr-14-107-xml",
       "mediaType": "application/xml",
-      "notes": "The eCFR versioner XML of 14 CFR part 107 as of 2026-01-01, byte for byte as the faa-part-107 engine commits it at corpus/part107.xml (the commit is pinned in tools/calibration/consumers.json). The engine cites these bytes directly, so the baseline names this source artifact and there is no derivation. Not segmented: segmenting XML needs an XML adapter (M5). A work of the United States Government, in the public domain. No retrieval date is recorded because the consumer records none.",
+      "notes": "The eCFR versioner XML of 14 CFR part 107 as of 2026-01-01, byte for byte as the faa-part-107 engine commits it at corpus/part107.xml (the commit is pinned in tools/calibration/consumers.json). The engine cites these bytes directly, so the baseline names this source artifact. The xml adapter segments it by its DIV8 elements (one per section, id from the N attribute) into a canonical artifact that is these same bytes. A work of the United States Government, in the public domain. No retrieval date is recorded because the consumer records none.",
       "origin": "https://www.ecfr.gov/api/versioner/v1/full/2026-01-01/title-14.xml?part=107",
       "path": "sources/part107.xml"
     }

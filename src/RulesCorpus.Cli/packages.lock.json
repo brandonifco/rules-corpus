@@ -10,6 +10,12 @@
         "dependencies": {
           "RulesCorpus": "[0.1.0-dev, )"
         }
+      },
+      "rulescorpus.adapters.xml": {
+        "type": "Project",
+        "dependencies": {
+          "RulesCorpus": "[0.1.0-dev, )"
+        }
       }
     }
   }

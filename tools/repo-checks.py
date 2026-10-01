@@ -91,11 +91,16 @@ YAML_SUFFIXES = {".yml", ".yaml"}
 ALLOWED_PROJECT_REFS: dict[str, set[str]] = {
     "src/RulesCorpus": set(),
     "src/RulesCorpus.Adapters.Text": {"src/RulesCorpus"},
-    "src/RulesCorpus.Cli": {"src/RulesCorpus", "src/RulesCorpus.Adapters.Text"},
+    "src/RulesCorpus.Adapters.Xml": {"src/RulesCorpus"},
+    "src/RulesCorpus.Cli": {
+        "src/RulesCorpus", "src/RulesCorpus.Adapters.Text", "src/RulesCorpus.Adapters.Xml",
+    },
     "tests/RulesCorpus.Tests": {"src/RulesCorpus"},
     "tests/RulesCorpus.Adapters.Text.Tests": {"src/RulesCorpus", "src/RulesCorpus.Adapters.Text"},
+    "tests/RulesCorpus.Adapters.Xml.Tests": {"src/RulesCorpus", "src/RulesCorpus.Adapters.Xml"},
     "tests/RulesCorpus.Cli.Tests": {
         "src/RulesCorpus.Cli", "src/RulesCorpus", "src/RulesCorpus.Adapters.Text",
+        "src/RulesCorpus.Adapters.Xml",
     },
 }
 
@@ -157,6 +162,7 @@ DETERMINISM_BANNED: list[tuple[str, str, str]] = [
 DETERMINISM_SCOPES: dict[str, list[tuple[str, str, str]]] = {
     "src/RulesCorpus": DETERMINISM_BANNED,
     "src/RulesCorpus.Adapters.Text": DETERMINISM_BANNED,
+    "src/RulesCorpus.Adapters.Xml": DETERMINISM_BANNED,
     "src/RulesCorpus.Cli": NETWORK_BANNED,
 }
 
