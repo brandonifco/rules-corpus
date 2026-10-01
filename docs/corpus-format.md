@@ -157,7 +157,8 @@ A source span maps the segment back to evidence it came from:
 { "artifact": "srd-text", "start": 120, "length": 428 }
 ```
 
-`artifact` names an artifact in the manifest. A span carries `pages` (1 ≤ `from` ≤ `to`), or
+`artifact` names the input of the derivation that produced the segment's artifact
+([decision 0008](decisions/0008-source-spans-name-the-derivation-input.md)). A span carries `pages` (1 ≤ `from` ≤ `to`), or
 `start` and `length` (a byte range lying within that artifact), or both.
 
 ### The two identities

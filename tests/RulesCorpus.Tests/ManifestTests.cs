@@ -68,6 +68,7 @@ public class ManifestValidationTests
         { "a baseline names an undeclared artifact", false, "$.baselines[0].artifact", "not declared" },
         { "a segment names an undeclared artifact", true, "$.segments[0].artifact", "not declared" },
         { "a source span names an undeclared artifact", true, "$.segments[0].sources[0].artifact", "not declared" },
+        { "a source span names the segment's own artifact, not its derivation's input", true, "$.segments[0].sources[0].artifact", "is not the input" },
         { "two artifacts share an id", true, "$.artifacts[1].id", "already used" },
         { "a derivation id collides with an artifact id", true, "$.derivations[0].id", "already used" },
         { "two segments share an id", true, "$.segments[1].id", "already used" },
@@ -226,6 +227,7 @@ public class ManifestValidationTests
             case "a baseline names an undeclared artifact": baselines[0]!["artifact"] = "nope"; break;
             case "a segment names an undeclared artifact": segments[0]!["artifact"] = "nope"; break;
             case "a source span names an undeclared artifact": segments[0]!["sources"]![0]!["artifact"] = "nope"; break;
+            case "a source span names the segment's own artifact, not its derivation's input": segments[0]!["sources"]![0]!["artifact"] = derived["id"]!.GetValue<string>(); break;
             case "two artifacts share an id": derived["id"] = "notes"; break;
             case "a derivation id collides with an artifact id":
                 derivations[0]!["id"] = "notes";
