@@ -31,7 +31,7 @@ maximum-size artifacts. A caller that needs more raises the limit.
 
 Additive public API: two properties on `CorpusLimits`, declared in `PublicAPI.Unshipped.txt`.
 By docs/compatibility.md a release that adds API is a minor release, so this ships as 1.1.0, not
-1.0.1; `VersionPrefix` is not changed by this record. No schema, digest, canonical JSON, CLI or
+1.0.1, and `VersionPrefix` is 1.1.0. No schema, digest, canonical JSON, CLI or
 packed-format change. Code that set a now-invalid value (zero, negative, over an array) was
 already unable to work and now fails earlier and clearly. Normal corpora are unaffected: defaults
 are far above any corpus this repository holds.

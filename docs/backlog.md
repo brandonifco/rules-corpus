@@ -14,8 +14,10 @@ consumer or a release-blocking invariant (CLAUDE.md principle 6).
 - **Further formats.** XML is done (`xml` adapter, decision 0011). HTML, and PDF only with a
   pinned, empirically reproducible extractor, wait for a consumer whose source needs them.
 - **Multi-document corpora.** FRCP-style byte-slice derivations of a larger release.
-- **Reproducible packages and a `dotnet tool`.** `dotnet pack` of the same sources twice gives
+- **Package distribution.** `dotnet pack` of the same sources twice gives
   different `.nupkg` and `.snupkg` hashes for all four projects (checked 2026-10-01 with
-  `CI=true`), so "packages reproducible" (plan M7) is not met, and nothing is published. Nothing
-  needs it: consumers pin a commit (rules-factory decision 0074) and there is no feed. Do it when
-  a consumer needs a package: make the pack deterministic first, and prove it by packing twice.
+  `CI=true`); nothing is published. This does not touch the product's reproducibility claims,
+  which are about corpus production, verification and corpus packing, and the gate checks those.
+  Consumers pin a commit (rules-factory decision 0074) and there is no feed. Take it up when a
+  consumer needs the packages or the `dotnet tool`: make the pack deterministic first, and prove
+  it by packing twice.
