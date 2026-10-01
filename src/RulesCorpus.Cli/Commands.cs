@@ -490,6 +490,12 @@ internal static class Commands
     {
         if (File.Exists(target))
         {
+            // A device or a named pipe exists as a "file" and may never end; a corpus is a regular file.
+            if (FileKind.Of(target) != EntryKind.RegularFile)
+            {
+                throw new RefusalException($"'{target}' is not a regular file, so it is not a packed corpus");
+            }
+
             using FileStream stream = File.OpenRead(target);
             return CorpusFiles.FromPacked(stream);
         }
