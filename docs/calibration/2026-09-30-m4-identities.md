@@ -154,11 +154,7 @@ same results.
 
 ## What M4 still needs
 
-- The second half of M4, not done here: replace each engine's vendored digest check (the
-  `HASH_DERIVATIONS` lookup in `verify_corpus`) with `rules-corpus verify` over a corpus built
-  from these definitions. That is a change to the consumer repositories and to how they get
-  a corpus (committed, packed, or built at intake), and it has to decide how an engine
-  accepts srd-52-combat's exit 3, since the PDF and the pdftotext step will always be not
-  verified from rules-corpus's side.
-- Segmenting faa-part-107 needs an XML adapter (M5); until then its corpus has no segments,
-  and its contentDigest covers the baseline alone.
+Done since: [the second half](2026-10-01-m4-migration.md). Each engine's vendored digest check is
+replaced by `rules-corpus verify` over a corpus built at intake from these definitions, and
+srd-52-combat's two not-verified checks are declared exactly (decision 0008). Segmenting
+faa-part-107 still needs an XML adapter (M5).
