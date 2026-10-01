@@ -72,6 +72,40 @@ public sealed class InspectDiffPackTests
     }
 
     [Fact]
+    public void Diff_never_passes_for_verification_a_tampered_artifact_diffs_equal_and_says_so_while_verify_fails()
+    {
+        using var s = new Scratch();
+        string good = s.BuiltSample("regulatory", "good");
+        string tampered = s.BuiltSample("regulatory", "tampered");
+        string artifact = Path.Combine(tampered, "canonical/14-cfr-107-excerpt.txt");
+        File.WriteAllText(artifact, File.ReadAllText(artifact).Replace("10 calendar days", "11 calendar days", StringComparison.Ordinal));
+
+        CliResult diff = s.Run("diff", good, tampered);
+        CliResult json = s.Run("diff", good, tampered, "--json");
+        CliResult verify = s.Run("verify", tampered);
+
+        // diff compares manifests, so the equal digests are about the manifests only...
+        Assert.Equal(0, diff.Exit);
+        Assert.Contains("manifestDigest  equal", diff.Stdout, StringComparison.Ordinal);
+        Assert.False(json.Json.GetProperty("verificationPerformed").GetBoolean());
+        // ...and every diff says in plain words that it did not verify either corpus.
+        Assert.StartsWith("note: diff compares manifests only; neither corpus was verified", diff.Stdout, StringComparison.Ordinal);
+        Assert.Contains("rules-corpus verify", diff.Stdout, StringComparison.Ordinal);
+        // The tampering is what verify is for.
+        Assert.Equal(1, verify.Exit);
+    }
+
+    [Fact]
+    public void Help_says_diff_does_not_verify()
+    {
+        using var s = new Scratch();
+
+        CliResult r = s.Run("--help");
+
+        Assert.Contains("does not verify", r.Stdout, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void Diff_of_two_builds_says_both_identities_are_equal()
     {
         using var s = new Scratch();

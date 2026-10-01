@@ -422,6 +422,7 @@ internal static class Commands
         context.Output.Result(
             new CjObject()
                 .Add("command", CjValue.Of("diff"))
+                .Add("verificationPerformed", CjValue.Of(false))
                 .Add("a", Side(pathA, a))
                 .Add("b", Side(pathB, b))
                 .Add("contentDigestEqual", CjValue.Of(d.ContentDigestEqual))
@@ -665,6 +666,7 @@ internal static class Commands
 
     private static void RenderDiff(Output o, CorpusManifest a, CorpusManifest b, ManifestDiff d)
     {
+        o.Line("note: diff compares manifests only; neither corpus was verified (run 'rules-corpus verify')");
         o.Line(d.ContentDigestEqual
             ? $"contentDigest   equal      {a.ContentDigest}"
             : $"contentDigest   DIFFERENT  {a.ContentDigest} -> {b.ContentDigest}");

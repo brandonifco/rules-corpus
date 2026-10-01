@@ -42,6 +42,8 @@ internal static class Cli
           diff <a> <b>
               Compare two corpora (directories or .tar); say whether contentDigest and
               manifestDigest are equal and list what was added, removed or changed.
+              It reads the two manifests and does not verify either corpus: equal digests
+              say the manifests agree, not that the files match them. Use verify for that.
           pack <output.tar> [--dir <corpus>] [--allow-not-verified]
               Verify, then write the corpus's canonical tar. Refuses an existing file.
 
