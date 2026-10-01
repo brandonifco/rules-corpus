@@ -159,6 +159,57 @@ public class PackTests
         Assert.Equal(VerificationOutcome.Failed, Assert.Single(report.Checks, c => c.Name == "package").Outcome);
     }
 
+    private static byte[] RawTar(Action<TarWriter> write)
+    {
+        using var output = new MemoryStream();
+        using (var writer = new TarWriter(output, TarEntryFormat.Pax, leaveOpen: true))
+        {
+            write(writer);
+        }
+
+        return output.ToArray();
+    }
+
+    [Theory]
+    [InlineData(TarEntryType.SymbolicLink)]
+    [InlineData(TarEntryType.HardLink)]
+    [InlineData(TarEntryType.Directory)]
+    public void An_entry_that_is_not_a_regular_file_is_refused_by_name_and_kind(TarEntryType kind)
+    {
+        byte[] tar = RawTar(w =>
+        {
+            PaxTarEntry entry = kind == TarEntryType.Directory
+                ? new PaxTarEntry(kind, "sources")
+                : new PaxTarEntry(kind, "sources/link") { LinkName = "/etc/passwd" };
+            w.WriteEntry(entry);
+        });
+        using var input = new MemoryStream(tar);
+
+        PackedCorpusFiles loaded = PackedCorpusFiles.Load(input, CorpusLimits.Default);
+
+        string problem = Assert.Single(loaded.Problems);
+        Assert.Contains("regular files only", problem, StringComparison.Ordinal);
+        Assert.Contains(kind.ToString(), problem, StringComparison.Ordinal);
+        Assert.False(loaded.IsCanonical);
+    }
+
+    [Fact]
+    public void A_duplicate_entry_name_is_refused_and_the_first_is_not_silently_replaced()
+    {
+        byte[] tar = RawTar(w =>
+        {
+            w.WriteEntry(new PaxTarEntry(TarEntryType.RegularFile, "corpus.json") { DataStream = new MemoryStream("first"u8.ToArray()) });
+            w.WriteEntry(new PaxTarEntry(TarEntryType.RegularFile, "corpus.json") { DataStream = new MemoryStream("second"u8.ToArray()) });
+        });
+        using var input = new MemoryStream(tar);
+
+        PackedCorpusFiles loaded = PackedCorpusFiles.Load(input, CorpusLimits.Default);
+
+        Assert.Contains("appears more than once", Assert.Single(loaded.Problems), StringComparison.Ordinal);
+        Assert.True(loaded.TryRead("corpus.json", 100, out byte[] kept, out _));
+        Assert.Equal("first"u8.ToArray(), kept);
+    }
+
     [Fact]
     public void A_tar_with_other_metadata_fails_the_package_check()
     {

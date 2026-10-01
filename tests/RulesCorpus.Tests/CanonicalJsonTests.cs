@@ -206,6 +206,19 @@ public class CanonicalJsonReaderTests
     }
 
     [Fact]
+    public void Nesting_to_the_depth_limit_reads_and_one_deeper_is_refused_without_overflowing_the_stack()
+    {
+        static string Nested(int depth) => new string('[', depth) + new string(']', depth);
+
+        (CjValue? atLimit, List<CorpusError> okErrors) = Read(Nested(64));
+        Assert.NotNull(atLimit);
+        Assert.Empty(okErrors);
+
+        AssertRefused(Nested(65), "not valid JSON");
+        AssertRefused(Nested(100_000), "not valid JSON");
+    }
+
+    [Fact]
     public void A_byte_order_mark_is_refused()
     {
         AssertRefused([0xEF, 0xBB, 0xBF, (byte)'{', (byte)'}'], "byte-order mark");
