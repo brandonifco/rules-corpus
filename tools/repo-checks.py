@@ -221,6 +221,16 @@ def _ignored(rel: Path) -> bool:
 
 
 def repo_files(root: Path) -> list[Path]:
+    """Every regular file git would put in the next commit; see `_repo_paths`."""
+    return _repo_paths(root, symlinks=False)
+
+
+def repo_symlinks(root: Path) -> list[Path]:
+    """Every symbolic link git would put in the next commit. `repo_files` drops them."""
+    return _repo_paths(root, symlinks=True)
+
+
+def _repo_paths(root: Path, symlinks: bool) -> list[Path]:
     """Every file git would put in the next commit: tracked, or untracked and not ignored.
 
     Untracked files are included because the gate runs before `git add`. When the root is
@@ -238,13 +248,13 @@ def repo_files(root: Path) -> list[Path]:
             break
         for name in done.stdout.split("\0"):
             path = root / name
-            if name and path.is_file() and not path.is_symlink():
+            if name and path.is_symlink() == symlinks and (symlinks or path.is_file()):
                 collected.add(path)
     if collected:
         return sorted(collected)
     return sorted(
         p for p in root.rglob("*")
-        if p.is_file() and not p.is_symlink() and not _ignored(p.relative_to(root))
+        if p.is_symlink() == symlinks and (symlinks or p.is_file()) and not _ignored(p.relative_to(root))
     )
 
 
@@ -468,6 +478,12 @@ def check_text_hygiene(root: Path) -> CheckResult:
     rule on packages.lock.json, which NuGet rewrites without one on every restore.
     """
     result = CheckResult()
+    for link in repo_symlinks(root):
+        rel = link.relative_to(root)
+        if rel.parts[0] == "src":
+            result.examined += 1
+            result.fail(f"{rel}: symbolic link under src/; the layering, neutrality, determinism "
+                        "and public-api checks do not follow links")
     for path in repo_files(root):
         rel = path.relative_to(root)
         if is_defect_fixture(rel):

@@ -19,6 +19,7 @@ text-hygiene in every editor and tool that might round-trip it.
 """
 from __future__ import annotations
 
+import os
 import contextlib
 import importlib.util
 import io
@@ -208,6 +209,16 @@ class TextHygieneTests(CheckTestCase):
     check = "text-hygiene"
 
     def test_clean_tree_passes(self) -> None:
+        self.assertPasses()
+
+    def test_symlink_under_src_fails_because_the_other_checks_do_not_follow_it(self) -> None:
+        self.repo.write("outside/Linked.cs", "namespace X;\n")
+        os.symlink("../../outside/Linked.cs", self.repo.root / "src/RulesCorpus/Linked.cs")
+        self.assertFailsWith("src/RulesCorpus/Linked.cs: symbolic link")
+
+    def test_symlink_outside_src_is_allowed(self) -> None:
+        self.repo.write("docs/target.md", "# x\n")
+        os.symlink("target.md", self.repo.root / "docs/alias.md")
         self.assertPasses()
 
     def test_bom_fails(self) -> None:
