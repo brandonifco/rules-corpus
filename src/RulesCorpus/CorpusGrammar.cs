@@ -4,15 +4,16 @@ namespace RulesCorpus;
 
 /// <summary>
 /// The identifier grammars of docs/corpus-format.md, Identifiers. Every reader and the builder
-/// check against these; they are public so an adapter can refuse an id the core would reject
-/// before it does any work, rather than after.
+/// check against these. Internal: no adapter uses them (the core validates what an adapter
+/// returns), so exposing them would be a compatibility promise nothing has validated
+/// (docs/decisions/0012).
 ///
 /// <para>
 /// Written as character loops rather than regular expressions so they are allocation-free,
 /// linear, and read the same as the grammar table.
 /// </para>
 /// </summary>
-public static class CorpusGrammar
+internal static class CorpusGrammar
 {
     private const int MaxIdLength = 128;
     private const int MaxSegmentIdLength = 256;
@@ -24,7 +25,7 @@ public static class CorpusGrammar
     /// 128 characters. A source id doubles as rules-kernel's source id, so this is the stricter
     /// of the two grammars: anything valid here is valid there.
     /// </summary>
-    public static bool IsId(string? value)
+    internal static bool IsId(string? value)
     {
         if (value is null || value.Length == 0 || value.Length > MaxIdLength)
         {
@@ -61,14 +62,14 @@ public static class CorpusGrammar
     /// <c>SourceBaselineId.HashDerivation</c> grammar. Named separately because the two could
     /// diverge, and a caller should say which one it means.
     /// </summary>
-    public static bool IsHashDerivation(string? value) => IsId(value);
+    internal static bool IsHashDerivation(string? value) => IsId(value);
 
     /// <summary>
     /// A segment id: <c>[A-Za-z0-9]([A-Za-z0-9._()/-]*[A-Za-z0-9)])?</c>, at most 256
     /// characters. Looser than <see cref="IsId"/> because segment ids echo the source's own
     /// numbering (<c>107.51</c>, <c>1.401(k)-1</c>), which consumers cite verbatim.
     /// </summary>
-    public static bool IsSegmentId(string? value)
+    internal static bool IsSegmentId(string? value)
     {
         if (value is null || value.Length == 0 || value.Length > MaxSegmentIdLength)
         {
@@ -94,7 +95,7 @@ public static class CorpusGrammar
     }
 
     /// <summary>A parameter or metadata key: <c>[a-z][a-zA-Z0-9]*</c>, at most 64 characters.</summary>
-    public static bool IsKey(string? value)
+    internal static bool IsKey(string? value)
     {
         if (value is null || value.Length == 0 || value.Length > MaxKeyLength)
         {
@@ -121,14 +122,14 @@ public static class CorpusGrammar
     /// A date: <c>YYYY-MM-DD</c> naming a real calendar date. <c>2026-02-30</c> is refused:
     /// a date that does not exist cannot be the moment a source was pinned.
     /// </summary>
-    public static bool IsDate(string? value) => TryParseDate(value, out _);
+    internal static bool IsDate(string? value) => TryParseDate(value, out _);
 
     /// <summary>
     /// A media type: <c>type/subtype</c> in lowercase ASCII, at most 128 characters, with no
     /// parameters. Each part is an RFC 6838 restricted name: a letter or digit, then letters,
     /// digits and <c>!#$&amp;^_.+-</c>.
     /// </summary>
-    public static bool IsMediaType(string? value)
+    internal static bool IsMediaType(string? value)
     {
         if (value is null || value.Length == 0 || value.Length > MaxMediaTypeLength)
         {

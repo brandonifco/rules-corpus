@@ -5,14 +5,17 @@ rules-corpus reproducibly produces and verifies a portable, immutable, addressab
 content identity, derivation history and source mappings are explicit, without containing or
 interpreting any domain rules.
 
-**Status:** pre-1.0. Milestones M0–M5 of the
-[plan](docs/rules-corpus-design-and-development-plan.docx) are done; M4's identity
-calibration against both consumers is [recorded](docs/calibration/2026-09-30-m4-identities.md);
-the rest of M4 onward is in the [backlog](docs/backlog.md).
+**Status:** pre-1.0, at the release gate. Milestones M0–M6 of the
+[plan](docs/rules-corpus-design-and-development-plan.docx) are done: both consumers verify
+through it ([M4](docs/calibration/2026-10-01-m4-migration.md)), the second adapter is proven on a
+real source ([M5](docs/calibration/2026-10-01-m5-xml.md)), and the public surface and
+[compatibility contract](docs/compatibility.md) are frozen. What remains is M7, the release.
+Work that is not release work is in the [backlog](docs/backlog.md).
 
 - [Architecture](docs/architecture.md)
 - [Corpus format](docs/corpus-format.md)
 - [Adapter contract](docs/adapter-contract.md)
+- [Compatibility contract](docs/compatibility.md)
 - [Decisions](docs/decisions/)
 - [Backlog](docs/backlog.md)
 
