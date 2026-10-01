@@ -32,6 +32,12 @@ and read both.
 - `--json` documents have the members `rules-corpus --help` and the tests show. A minor release
   may add members to them; a consumer ignores members it does not know. Existing members are not
   removed, renamed or retyped.
+- An unexpected exception is reported as `internal error: <type>: <message>`, exit 1, and with
+  `--json` the usual error document; it is a defect in the tool, never a stack trace
+  ([decision 0014](decisions/0014-cli-failure-boundary-and-diff-does-not-verify.md)).
+- `diff` compares manifests and does not verify either corpus; its `--json` result says
+  `verificationPerformed: false`. Equal digests from `diff` are not a verification result: use
+  `verify`.
 - Human-readable output is not a promise.
 
 ## The .NET libraries

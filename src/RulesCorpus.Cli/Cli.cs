@@ -42,6 +42,8 @@ internal static class Cli
           diff <a> <b>
               Compare two corpora (directories or .tar); say whether contentDigest and
               manifestDigest are equal and list what was added, removed or changed.
+              It reads the two manifests and does not verify either corpus: equal digests
+              say the manifests agree, not that the files match them. Use verify for that.
           pack <output.tar> [--dir <corpus>] [--allow-not-verified]
               Verify, then write the corpus's canonical tar. Refuses an existing file.
 
@@ -75,7 +77,7 @@ internal static class Cli
         (bool json, bool help, List<string> tokens, string? misplaced) = SplitGlobalFlags(args);
         var output = new Output(stdout, stderr, json);
 
-        try
+        return Guard(output, () =>
         {
             if (misplaced is not null)
             {
@@ -108,6 +110,26 @@ internal static class Cli
                 "pack" => Commands.Pack(context, rest),
                 _ => throw new UsageException($"unknown command '{tokens[0]}'"),
             };
+        });
+    }
+
+    /// <summary>
+    /// Runs a command and turns every way it can fail into an exit code and a message, never a
+    /// stack trace. The boundary:
+    /// <list type="bullet">
+    /// <item>Expected, and reported as themselves: a usage error (exit 2); a refusal, a failed
+    /// check, an adapter's refusal, and the file system saying no (exit 1).</item>
+    /// <item>Anything else is a defect in this tool. It is reported as an <c>internal error</c>
+    /// with its type and message, exit 1, so a script still sees a failure and a person still
+    /// sees what failed. It is not hidden and not retried.</item>
+    /// <item>Running out of memory is a process failure, not a result: it propagates.</item>
+    /// </list>
+    /// </summary>
+    internal static int Guard(Output output, Func<int> body)
+    {
+        try
+        {
+            return body();
         }
         catch (UsageException e)
         {
@@ -129,6 +151,12 @@ internal static class Cli
         catch (Exception e) when (e is CorpusAdapterException or IOException or UnauthorizedAccessException)
         {
             output.Error(ExitFailed, e.Message, e.Message, []);
+            return ExitFailed;
+        }
+        catch (Exception e) when (e is not OutOfMemoryException)
+        {
+            string message = $"internal error: {e.GetType().Name}: {e.Message}";
+            output.Error(ExitFailed, message + "\nThis is a defect in rules-corpus, not a problem with your input; please report it.", message, []);
             return ExitFailed;
         }
     }
@@ -205,9 +233,22 @@ internal sealed class Context(Output output, string workingDirectory)
 
     /// <summary>An argument path made absolute against the working directory.</summary>
     /// <exception cref="UsageException">The path is empty; the working directory is spelled '.'.</exception>
-    public string Resolve(string path) => path.Length == 0
-        ? throw new UsageException("an empty path is not accepted; write '.' for the working directory")
-        : Path.GetFullPath(path, workingDirectory);
+    public string Resolve(string path)
+    {
+        if (path.Length == 0)
+        {
+            throw new UsageException("an empty path is not accepted; write '.' for the working directory");
+        }
+
+        try
+        {
+            return Path.GetFullPath(path, workingDirectory);
+        }
+        catch (Exception e) when (e is ArgumentException or NotSupportedException)
+        {
+            throw new UsageException("not a valid path on this system: " + path.Replace("\0", "\\0", StringComparison.Ordinal));
+        }
+    }
 }
 
 /// <summary>

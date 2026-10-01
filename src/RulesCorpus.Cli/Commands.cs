@@ -422,6 +422,7 @@ internal static class Commands
         context.Output.Result(
             new CjObject()
                 .Add("command", CjValue.Of("diff"))
+                .Add("verificationPerformed", CjValue.Of(false))
                 .Add("a", Side(pathA, a))
                 .Add("b", Side(pathB, b))
                 .Add("contentDigestEqual", CjValue.Of(d.ContentDigestEqual))
@@ -465,10 +466,7 @@ internal static class Commands
         using var archive = new MemoryStream();
         CorpusPacker.Pack(directory, archive, new VerificationOptions(), allow);
         byte[] bytes = archive.ToArray();
-        using (var stream = new FileStream(destination, FileMode.CreateNew, FileAccess.Write))
-        {
-            stream.Write(bytes);
-        }
+        AtomicFile.CreateNew(destination, stream => stream.Write(bytes));
 
         ContentDigest digest = ContentDigest.Compute(bytes);
         context.Output.Result(
@@ -493,6 +491,12 @@ internal static class Commands
     {
         if (File.Exists(target))
         {
+            // A device or a named pipe exists as a "file" and may never end; a corpus is a regular file.
+            if (FileKind.Of(target) != EntryKind.RegularFile)
+            {
+                throw new RefusalException($"'{target}' is not a regular file, so it is not a packed corpus");
+            }
+
             using FileStream stream = File.OpenRead(target);
             return CorpusFiles.FromPacked(stream);
         }
@@ -662,6 +666,7 @@ internal static class Commands
 
     private static void RenderDiff(Output o, CorpusManifest a, CorpusManifest b, ManifestDiff d)
     {
+        o.Line("note: diff compares manifests only; neither corpus was verified (run 'rules-corpus verify')");
         o.Line(d.ContentDigestEqual
             ? $"contentDigest   equal      {a.ContentDigest}"
             : $"contentDigest   DIFFERENT  {a.ContentDigest} -> {b.ContentDigest}");
