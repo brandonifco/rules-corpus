@@ -24,6 +24,19 @@ internal static class Commands
     private static readonly CommandSpec DiffSpec = new("diff", 2, 2, [], [], []);
     private static readonly CommandSpec PackSpec = new("pack", 1, 1, ["--dir"], [], ["--allow-not-verified"]);
 
+    /// <summary>The options of <paramref name="command"/> that take the next token as their value; none for an unknown command.</summary>
+    public static IReadOnlyList<string> ValueOptionsOf(string command) => command switch
+    {
+        "init" => InitSpec.ValueOptions,
+        "import" => ImportSpec.ValueOptions,
+        "build" => BuildSpec.ValueOptions,
+        "verify" => VerifySpec.ValueOptions,
+        "inspect" => InspectSpec.ValueOptions,
+        "diff" => DiffSpec.ValueOptions,
+        "pack" => PackSpec.ValueOptions,
+        _ => [],
+    };
+
     /// <summary>The adapters this tool ships, for build and rebuild.</summary>
     private static ICorpusAdapter[] Adapters => [new TextAdapter()];
 

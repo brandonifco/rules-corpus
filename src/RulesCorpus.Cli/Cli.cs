@@ -68,13 +68,17 @@ internal static class Cli
     public static int Run(string[] args, TextWriter stdout, TextWriter stderr, string workingDirectory)
     {
         ArgumentNullException.ThrowIfNull(args);
-        bool json = args.Contains("--json", StringComparer.Ordinal);
-        var tokens = args.Where(a => a != "--json").ToList();
+        (bool json, bool help, List<string> tokens, string? misplaced) = SplitGlobalFlags(args);
         var output = new Output(stdout, stderr, json);
 
         try
         {
-            if (tokens.Count == 0 || tokens.Contains("--help") || tokens.Contains("-h"))
+            if (misplaced is not null)
+            {
+                throw new UsageException(misplaced);
+            }
+
+            if (tokens.Count == 0 || help)
             {
                 output.Line(Usage.TrimEnd('\n'));
                 return ExitOk;
@@ -123,6 +127,51 @@ internal static class Cli
             output.Error(ExitFailed, e.Message, e.Message, []);
             return ExitFailed;
         }
+    }
+
+    /// <summary>
+    /// Separates --json, --help and -h from the command. A token that follows an option taking a
+    /// value is that option's value, so a global flag there is reported rather than swallowed.
+    /// </summary>
+    private static (bool Json, bool Help, List<string> Tokens, string? Misplaced) SplitGlobalFlags(string[] args)
+    {
+        IReadOnlyList<string> valueOptions = args.Length > 0 ? Commands.ValueOptionsOf(args[0]) : [];
+        bool json = false;
+        bool help = false;
+        string? misplaced = null;
+        var tokens = new List<string>();
+        for (int i = 0; i < args.Length; i++)
+        {
+            string token = args[i];
+            if (i > 0 && valueOptions.Contains(token) && i + 1 < args.Length)
+            {
+                tokens.Add(token);
+                string value = args[++i];
+                if (value is "--json" or "--help" or "-h")
+                {
+                    misplaced ??= $"{args[0]}: {token} needs a value, not {value}";
+                }
+                else
+                {
+                    tokens.Add(value);
+                }
+            }
+            else if (token == "--json")
+            {
+                json = true;
+            }
+            else if (token is "--help" or "-h")
+            {
+                help = true;
+                tokens.Add(token);
+            }
+            else
+            {
+                tokens.Add(token);
+            }
+        }
+
+        return (json, help, tokens, misplaced);
     }
 
     /// <summary>Decodes bytes that verification has already shown to be well-formed UTF-8.</summary>
