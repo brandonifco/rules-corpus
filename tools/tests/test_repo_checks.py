@@ -318,6 +318,11 @@ class LayeringTests(CheckTestCase):
         self.assertFailsWith("src/RulesCorpus.Adapters.Xml/RulesCorpus.Adapters.Xml.csproj",
                              "not declared in ALLOWED_PROJECT_REFS")
 
+    def test_declared_project_whose_csproj_was_deleted_fails_though_its_directory_remains(self) -> None:
+        self.repo.write("src/RulesCorpus.Adapters.Text/Leftover.cs", "namespace X;\n")
+        (self.repo.root / "src/RulesCorpus.Adapters.Text/RulesCorpus.Adapters.Text.csproj").unlink()
+        self.assertFailsWith("src/RulesCorpus.Adapters.Text: declared in ALLOWED_PROJECT_REFS but has no csproj")
+
     def test_core_referencing_upward_fails(self) -> None:
         self.repo.write_project("src/RulesCorpus", "library", ["src/RulesCorpus.Adapters.Text"])
         self.assertFailsWith("src/RulesCorpus/RulesCorpus.csproj",

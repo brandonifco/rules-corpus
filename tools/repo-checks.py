@@ -584,7 +584,7 @@ def check_layering(root: Path) -> CheckResult:
         projects[key] = csproj
 
     for key in sorted(ALLOWED_PROJECT_REFS):
-        if key not in projects and not (root / key).is_dir():
+        if key not in projects:
             result.fail(f"{key}: declared in ALLOWED_PROJECT_REFS but has no csproj on disk")
 
     for key, csproj in sorted(projects.items()):
