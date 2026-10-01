@@ -1,3 +1,5 @@
+using System.Text.Json.Nodes;
+using RulesCorpus.Adapters;
 using RulesCorpus.Tests.Support;
 
 namespace RulesCorpus.Tests;
@@ -20,6 +22,9 @@ public class DiffTests
         Assert.Empty(diff.ArtifactsAdded);
         Assert.Empty(diff.ArtifactsRemoved);
         Assert.Empty(diff.ArtifactsChanged);
+        Assert.Empty(diff.DerivationsAdded);
+        Assert.Empty(diff.DerivationsRemoved);
+        Assert.Empty(diff.DerivationsChanged);
         Assert.Empty(diff.BaselinesChanged);
         Assert.Empty(diff.SegmentsAdded);
         Assert.Empty(diff.SegmentsRemoved);
@@ -64,5 +69,65 @@ public class DiffTests
 
         Assert.Equal(["l2", "l3"], diff.SegmentsAdded.Select(s => s.Id));
         Assert.Empty(diff.SegmentsRemoved);
+    }
+
+    private static CorpusManifest WithDerivationEdit(Action<JsonObject> edit)
+    {
+        using TempCorpus corpus = TempCorpus.Stored();
+        corpus.Build();
+        JsonObject m = ManifestEdits.Read(corpus);
+        edit((JsonObject)m["derivations"]![0]!);
+        return CorpusManifest.Parse(ManifestEdits.Reseal(ManifestEdits.Bytes(m)));
+    }
+
+    [Fact]
+    public void A_fidelity_and_losses_change_shows_the_changed_derivation()
+    {
+        ManifestDiff diff = ManifestDiff.Compare(Built(), WithDerivationEdit(d =>
+        {
+            d["fidelity"] = "lossy-traceable";
+            d["losses"] = new JsonArray("line endings");
+        }));
+
+        Assert.False(diff.ManifestDigestEqual);
+        ManifestChange<ManifestDerivation> change = Assert.Single(diff.DerivationsChanged);
+        Assert.Equal(DerivationFidelity.Lossless, change.Before.Fidelity);
+        Assert.Empty(change.Before.Losses);
+        Assert.Equal(DerivationFidelity.LossyTraceable, change.After.Fidelity);
+        Assert.Equal(["line endings"], change.After.Losses);
+        Assert.Empty(diff.DerivationsAdded);
+        Assert.Empty(diff.DerivationsRemoved);
+        Assert.Empty(diff.ArtifactsChanged);
+        Assert.Empty(diff.SegmentsChanged);
+    }
+
+    [Fact]
+    public void A_parameter_change_shows_the_changed_derivation()
+    {
+        ManifestDiff diff = ManifestDiff.Compare(Built(), WithDerivationEdit(d => d["parameters"] = new JsonObject { ["prefix"] = "x" }));
+
+        ManifestChange<ManifestDerivation> change = Assert.Single(diff.DerivationsChanged);
+        Assert.Empty(change.Before.Parameters);
+        Assert.Equal("x", change.After.Parameters["prefix"]);
+    }
+
+    [Fact]
+    public void A_renamed_derivation_is_one_removed_and_one_added()
+    {
+        CorpusManifest after;
+        using (TempCorpus corpus = TempCorpus.Stored())
+        {
+            corpus.Build();
+            JsonObject m = ManifestEdits.Read(corpus);
+            m["derivations"]![0]!["id"] = "renamed";
+            m["artifacts"]![1]!["derivedBy"] = "renamed";
+            after = CorpusManifest.Parse(ManifestEdits.Reseal(ManifestEdits.Bytes(m)));
+        }
+
+        ManifestDiff diff = ManifestDiff.Compare(Built(), after);
+
+        Assert.Equal("renamed", Assert.Single(diff.DerivationsAdded).Id);
+        Assert.Equal("notes-lines", Assert.Single(diff.DerivationsRemoved).Id);
+        Assert.Empty(diff.DerivationsChanged);
     }
 }

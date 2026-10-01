@@ -312,6 +312,7 @@ internal static class Commands
                 .Add("contentDigestEqual", CjValue.Of(d.ContentDigestEqual))
                 .Add("manifestDigestEqual", CjValue.Of(d.ManifestDigestEqual))
                 .Add("artifacts", Changes(d.ArtifactsAdded, d.ArtifactsRemoved, d.ArtifactsChanged, ManifestJson.ToJson))
+                .Add("derivations", Changes(d.DerivationsAdded, d.DerivationsRemoved, d.DerivationsChanged, ManifestJson.ToJson))
                 .Add("baselines", Changes(d.BaselinesAdded, d.BaselinesRemoved, d.BaselinesChanged, ManifestJson.ToJson))
                 .Add("segments", Changes(d.SegmentsAdded, d.SegmentsRemoved, d.SegmentsChanged, ManifestJson.ToJson)),
             () => RenderDiff(context.Output, a, b, d));
@@ -557,6 +558,9 @@ internal static class Commands
         lines.AddRange(d.ArtifactsAdded.Select(x => $"+ artifact {x.Id}"));
         lines.AddRange(d.ArtifactsRemoved.Select(x => $"- artifact {x.Id}"));
         lines.AddRange(d.ArtifactsChanged.Select(x => $"~ artifact {x.After.Id}"));
+        lines.AddRange(d.DerivationsAdded.Select(x => $"+ derivation {x.Id}"));
+        lines.AddRange(d.DerivationsRemoved.Select(x => $"- derivation {x.Id}"));
+        lines.AddRange(d.DerivationsChanged.Select(x => $"~ derivation {x.After.Id}"));
         lines.AddRange(d.BaselinesAdded.Select(x => $"+ baseline {x.SourceId}"));
         lines.AddRange(d.BaselinesRemoved.Select(x => $"- baseline {x.SourceId}"));
         lines.AddRange(d.BaselinesChanged.Select(x => $"~ baseline {x.After.SourceId}"));
@@ -572,7 +576,7 @@ internal static class Commands
         {
             o.Line(d.ManifestDigestEqual
                 ? "no differences"
-                : "no artifact, baseline or segment differs; the difference is elsewhere in the manifest (corpus id, derivations or build definition)");
+                : "no artifact, derivation, baseline or segment differs; the difference is elsewhere in the manifest (corpus id or build definition)");
         }
     }
 

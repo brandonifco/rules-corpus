@@ -5,7 +5,7 @@ namespace RulesCorpus;
 
 /// <summary>
 /// The structured difference between two manifests: whether each identity moved, and which
-/// artifacts, baselines and segments were added, removed or changed. Rendering is the caller's.
+/// artifacts, derivations, baselines and segments were added, removed or changed. Rendering is the caller's.
 /// </summary>
 public sealed class ManifestDiff
 {
@@ -27,6 +27,19 @@ public sealed class ManifestDiff
 
     /// <summary>Artifacts in both whose records differ in any member (digest, length, path, provenance), in the second manifest's order.</summary>
     public IReadOnlyList<ManifestChange<ManifestArtifact>> ArtifactsChanged { get; private init; } = [];
+
+    /// <summary>Derivations only in the second manifest, matched by id, in its order.</summary>
+    public IReadOnlyList<ManifestDerivation> DerivationsAdded { get; private init; } = [];
+
+    /// <summary>Derivations only in the first manifest, matched by id, in its order.</summary>
+    public IReadOnlyList<ManifestDerivation> DerivationsRemoved { get; private init; } = [];
+
+    /// <summary>
+    /// Derivations in both whose records differ in any member (inputs, output, tool, parameters,
+    /// fidelity, losses), in the second manifest's order. A derivation that now discards more is
+    /// listed here even though no artifact or segment record changed.
+    /// </summary>
+    public IReadOnlyList<ManifestChange<ManifestDerivation>> DerivationsChanged { get; private init; } = [];
 
     /// <summary>Baselines only in the second manifest, matched by source id.</summary>
     public IReadOnlyList<ManifestBaseline> BaselinesAdded { get; private init; } = [];
@@ -60,6 +73,9 @@ public sealed class ManifestDiff
         var (artifactsAdded, artifactsRemoved, artifactsChanged) = Match(
             before.Artifacts, after.Artifacts, a => a.Id, a => CanonicalJsonWriter.ToCompact(ManifestJson.ToJson(a)));
 
+        var (derivationsAdded, derivationsRemoved, derivationsChanged) = Match(
+            before.Derivations, after.Derivations, d => d.Id, d => CanonicalJsonWriter.ToCompact(ManifestJson.ToJson(d)));
+
         Func<ManifestBaseline, byte[]> baselineKey(CorpusManifest m) => b =>
         {
             ContentDigest? hash = m.Artifacts.FirstOrDefault(a => a.Id == b.Artifact)?.Digest;
@@ -80,6 +96,9 @@ public sealed class ManifestDiff
             ArtifactsAdded = artifactsAdded,
             ArtifactsRemoved = artifactsRemoved,
             ArtifactsChanged = artifactsChanged,
+            DerivationsAdded = derivationsAdded,
+            DerivationsRemoved = derivationsRemoved,
+            DerivationsChanged = derivationsChanged,
             BaselinesAdded = baselinesAdded,
             BaselinesRemoved = baselinesRemoved,
             BaselinesChanged = baselinesChanged,
