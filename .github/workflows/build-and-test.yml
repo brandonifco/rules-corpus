@@ -19,12 +19,13 @@ permissions:
 
 jobs:
   build-and-test:
-    # The hosted default is a fixed release, not the ubuntu-latest alias: that alias has jumped
-    # Ubuntu releases before, and each jump silently changes the toolchain underneath a build
-    # whose central claim is reproducibility. The owner's own runs go to the factory-ci VM
-    # instead (rules-factory's execution-trust decision, 0080); forks and bots keep the hosted
-    # default.
-    runs-on: ${{ fromJSON(github.actor == github.repository_owner && github.triggering_actor == github.repository_owner && (github.event.pull_request.head.repo.full_name || !github.event.pull_request && github.repository) == github.repository && vars.FACTORY_RUNS_ON_TRUSTED || vars.FACTORY_RUNS_ON || '"ubuntu-24.04"') }}
+    # The owner's own runs go to the factory-ci VM (rules-factory's execution-trust decision,
+    # 0080); forks and bots run hosted on a fixed release, not the ubuntu-latest alias: that alias
+    # has jumped Ubuntu releases before, and each jump silently changes the toolchain underneath a
+    # build whose central claim is reproducibility. There is no hosted default
+    # (rules-factory's no-hosted-default decision, 0087): without FACTORY_RUNS_ON_TRUSTED the job
+    # fails at once.
+    runs-on: ${{ fromJSON(vars.FACTORY_RUNS_ON_TRUSTED && vars.FACTORY_RUNS_ON && '{"group":"FACTORY_RUNS_ON or FACTORY_RUNS_ON_TRUSTED is unset or invalid"}' || github.actor == github.repository_owner && github.triggering_actor == github.repository_owner && (github.event.pull_request.head.repo.full_name || !github.event.pull_request && github.repository) == github.repository && (contains(vars.FACTORY_RUNS_ON_TRUSTED || vars.FACTORY_RUNS_ON, '"factory-ci"') && (vars.FACTORY_RUNS_ON_TRUSTED || vars.FACTORY_RUNS_ON) || vars.FACTORY_RUNS_ON == '"ubuntu-24.04"' && '"ubuntu-24.04"' || '{"group":"FACTORY_RUNS_ON or FACTORY_RUNS_ON_TRUSTED is unset or invalid"}') || contains(vars.FACTORY_RUNS_ON, '"factory-ci"') && vars.FACTORY_RUNS_ON || vars.FACTORY_RUNS_ON == '"ubuntu-24.04"' && '"ubuntu-24.04"' || contains(vars.FACTORY_RUNS_ON_TRUSTED, '"factory-ci"') && '"ubuntu-24.04"' || '{"group":"FACTORY_RUNS_ON or FACTORY_RUNS_ON_TRUSTED is unset or invalid"}') }}
     timeout-minutes: 15
     steps:
       - name: Checkout
